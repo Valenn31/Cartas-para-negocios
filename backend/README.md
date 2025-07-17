@@ -1,2 +1,7 @@
-npm start
-python .\manage.py runserver
+
+Run frontend:
+    npm start
+
+Run Backend:
+    .\venv\Scripts\Activate.ps1
+    python .\manage.py runserver
