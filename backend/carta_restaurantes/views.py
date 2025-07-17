@@ -3,7 +3,7 @@ from .models import Categoria, Comida
 from .serializers import CategoriaSerializer, ComidaSerializer
 
 class CategoriaList(generics.ListAPIView):
-    queryset = Categoria.objects.all()
+    queryset = Categoria.objects.all().order_by('orden')
     serializer_class = CategoriaSerializer
 
 class ComidaList(generics.ListAPIView):

@@ -66,6 +66,13 @@ function App() {
               ))}
             </div>
           </div>
+          
+          {/* Footer */}
+          <div className={styles.footer}>
+            <p className={styles.footerText}>
+              Victory © 2025
+            </p>
+          </div>
         </>
       ) : (
         <div className={styles.menuView}>
@@ -110,6 +117,13 @@ function App() {
                 </div>
               ))}
             </div>
+          </div>
+          
+          {/* Footer */}
+          <div className={styles.footer}>
+            <p className={styles.footerText}>
+              Victory © 2025
+            </p>
           </div>
         </div>
       )}

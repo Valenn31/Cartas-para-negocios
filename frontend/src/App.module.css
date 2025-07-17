@@ -22,6 +22,7 @@
   background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
   border-bottom: 1px solid #333;
   margin-bottom: 30px;
+  animation: fadeInDown 0.8s ease-out;
 }
 
 .headerTitle {
@@ -31,6 +32,7 @@
   letter-spacing: 3px;
   text-transform: uppercase;
   color: white;
+  animation: fadeInUp 1s ease-out 0.2s both;
 }
 
 .headerSubtitle {
@@ -38,11 +40,13 @@
   margin: 10px 0 0 0;
   color: #ccc;
   letter-spacing: 1px;
+  animation: fadeInUp 1s ease-out 0.4s both;
 }
 
 /* Sección de categorías */
 .categoriesSection {
   padding: 0 20px;
+  animation: fadeInUp 0.8s ease-out;
 }
 
 .categoriesTitle {
@@ -50,6 +54,7 @@
   font-size: 2rem;
   margin-bottom: 30px;
   color: white;
+  animation: fadeInDown 0.6s ease-out;
 }
 
 .categoriesGrid {
@@ -73,6 +78,21 @@
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   position: relative;
+  animation: slideInUp 0.6s ease-out;
+  animation-fill-mode: both;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.categoryCard:nth-child(1) { animation-delay: 0.1s; }
+.categoryCard:nth-child(2) { animation-delay: 0.2s; }
+.categoryCard:nth-child(3) { animation-delay: 0.3s; }
+.categoryCard:nth-child(4) { animation-delay: 0.4s; }
+.categoryCard:nth-child(5) { animation-delay: 0.5s; }
+.categoryCard:nth-child(6) { animation-delay: 0.6s; }
+
+.categoryCard:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
 }
 
 .categoryOverlay {
@@ -200,4 +220,53 @@
   font-size: 1rem;
   line-height: 1.4;
   font-weight: normal;
+}
+
+/* Footer */
+.footer {
+  padding: 40px 20px 20px 20px;
+  background-color: #1a1a1a;
+  text-align: center;
+  border-top: 1px solid #333;
+  margin-top: 30px;
+}
+
+.footerText {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

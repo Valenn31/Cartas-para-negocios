@@ -1,1 +1,2 @@
-Instrucciones completas como ya te pasé antes
+npm start
+python .\manage.py runserver

@@ -4,7 +4,7 @@ from .models import Categoria, Comida
 class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Categoria
-        fields = ['id', 'nombre', 'imagen']  # ← asegurate de incluir imagen
+        fields = ['id', 'nombre', 'imagen', 'orden']
 
 
 class ComidaSerializer(serializers.ModelSerializer):
