@@ -1,0 +1,15 @@
+# BACKEND (Django)
+venv/
+*.pyc
+__pycache__/
+db.sqlite3
+.env
+
+# FRONTEND (React)
+node_modules/
+build/
+dist/
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
