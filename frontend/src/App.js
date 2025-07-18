@@ -63,6 +63,9 @@ function App() {
             </p>
           </div>
 
+          {/* Degradado de transición */}
+          <div className={styles.headerGradient}></div>
+
           <div className={styles.categoriesSection}>
             <h2 className={styles.categoriesTitle}>
               
@@ -91,6 +94,9 @@ function App() {
             <p className={styles.footerText}>
               Victory © 2025
             </p>
+            <a href="/admin" className={styles.adminLink}>
+              Admin
+            </a>
           </div>
         </>
       ) : (
