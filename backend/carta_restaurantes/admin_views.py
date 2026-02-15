@@ -120,10 +120,10 @@ class AdminComidaList(generics.ListCreateAPIView):
         categoria_id = self.kwargs.get('categoria_id')
         
         if subcategoria_id:
-            return Comida.objects.filter(subcategoria_id=subcategoria_id)
+            return Comida.objects.filter(subcategoria_id=subcategoria_id).order_by('orden')
         elif categoria_id:
-            return Comida.objects.filter(categoria_id=categoria_id)
-        return Comida.objects.all()
+            return Comida.objects.filter(categoria_id=categoria_id).order_by('orden')
+        return Comida.objects.all().order_by('orden')
     
     def perform_create(self, serializer):
         if not self.request.user.is_staff:
@@ -184,6 +184,29 @@ def update_subcategoria_orden(request):
                 nuevo_orden = item.get('orden')
                 if subcategoria_id and nuevo_orden is not None:
                     Subcategoria.objects.filter(id=subcategoria_id).update(orden=nuevo_orden)
+        
+        return Response({'message': 'Orden actualizado correctamente'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Vista para actualizar orden de comidas
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_comida_orden(request):
+    if not request.user.is_staff:
+        return Response({'error': 'Usuario sin permisos de administrador'}, 
+                       status=status.HTTP_403_FORBIDDEN)
+    
+    comida_orders = request.data.get('orders', [])
+    
+    try:
+        with transaction.atomic():
+            for item in comida_orders:
+                comida_id = item.get('id')
+                nuevo_orden = item.get('orden')
+                if comida_id and nuevo_orden is not None:
+                    Comida.objects.filter(id=comida_id).update(orden=nuevo_orden)
         
         return Response({'message': 'Orden actualizado correctamente'})
     except Exception as e:

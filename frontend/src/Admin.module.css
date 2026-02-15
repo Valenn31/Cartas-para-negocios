@@ -197,13 +197,67 @@
   border-radius: 15px;
   overflow: hidden;
   transition: all 0.3s ease;
-  cursor: pointer;
+  cursor: grab;
+  position: relative;
 }
 
 .categoryCard:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
   border-color: rgba(255, 255, 255, 0.2);
+}
+
+.categoryCard:active {
+  cursor: grabbing;
+}
+
+/* Drag Handle */
+.dragHandle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 16px;
+  z-index: 10;
+  padding: 5px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  cursor: grab;
+  transition: all 0.3s ease;
+}
+
+.dragHandle:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Estados de Drag & Drop */
+.categoryCard.dragging {
+  opacity: 0.5;
+  transform: scale(0.95) rotate(2deg);
+  z-index: 1000;
+  cursor: grabbing;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+.categoryCard.dragOver {
+  border-color: #ff6b6b !important;
+  background: rgba(255, 107, 107, 0.1) !important;
+  transform: scale(1.05);
+  box-shadow: 0 20px 40px rgba(255, 107, 107, 0.3);
+}
+
+.categoryCard.dragOver::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 107, 107, 0.2);
+  border: 2px dashed #ff6b6b;
+  border-radius: 15px;
+  z-index: 5;
 }
 
 .categoryImage {
@@ -232,14 +286,47 @@
   border-radius: 15px;
   overflow: hidden;
   transition: all 0.3s ease;
-  cursor: pointer;
+  cursor: grab;
   border-left: 4px solid #ff6b6b;
+  position: relative;
 }
 
 .subcategoryCard:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
   border-color: rgba(255, 255, 255, 0.2);
+}
+
+.subcategoryCard:active {
+  cursor: grabbing;
+}
+
+.subcategoryCard.dragging {
+  opacity: 0.5;
+  transform: scale(0.95) rotate(2deg);
+  z-index: 1000;
+  cursor: grabbing;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+.subcategoryCard.dragOver {
+  border-color: #ff6b6b !important;
+  background: rgba(255, 107, 107, 0.1) !important;
+  transform: scale(1.05);
+  box-shadow: 0 20px 40px rgba(255, 107, 107, 0.3);
+}
+
+.subcategoryCard.dragOver::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 107, 107, 0.2);
+  border: 2px dashed #ff6b6b;
+  border-radius: 15px;
+  z-index: 5;
 }
 
 /* Food Card */
@@ -249,14 +336,47 @@
   border-radius: 15px;
   overflow: hidden;
   transition: all 0.3s ease;
-  cursor: pointer;
+  cursor: grab;
   border-left: 4px solid #4CAF50;
+  position: relative;
 }
 
 .foodCard:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
   border-color: rgba(255, 255, 255, 0.2);
+}
+
+.foodCard:active {
+  cursor: grabbing;
+}
+
+.foodCard.dragging {
+  opacity: 0.5;
+  transform: scale(0.95) rotate(2deg);
+  z-index: 1000;
+  cursor: grabbing;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+.foodCard.dragOver {
+  border-color: #4CAF50 !important;
+  background: rgba(76, 175, 80, 0.1) !important;
+  transform: scale(1.05);
+  box-shadow: 0 20px 40px rgba(76, 175, 80, 0.3);
+}
+
+.foodCard.dragOver::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(76, 175, 80, 0.2);
+  border: 2px dashed #4CAF50;
+  border-radius: 15px;
+  z-index: 5;
 }
 
 /* Card Content */

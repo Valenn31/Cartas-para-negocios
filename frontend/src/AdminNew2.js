@@ -37,7 +37,6 @@ function Admin() {
     subcategorias, 
     setSubcategorias,
     comidas,
-    setComidas,
     loading,
     loadCurrentData,
     deleteItem

@@ -33,6 +33,7 @@ class Comida(models.Model):
     descripcion = models.TextField(blank=True)
     precio = models.DecimalField(max_digits=8, decimal_places=2)
     disponible = models.BooleanField(default=True)
+    orden = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.nombre

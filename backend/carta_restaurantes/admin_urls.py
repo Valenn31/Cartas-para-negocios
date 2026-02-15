@@ -22,4 +22,5 @@ urlpatterns = [
     path('categorias/<int:categoria_id>/comidas/', admin_views.AdminComidaList.as_view(), name='admin_comidas_by_categoria'),
     path('subcategorias/<int:subcategoria_id>/comidas/', admin_views.AdminComidaList.as_view(), name='admin_comidas_by_subcategoria'),
     path('comidas/<int:pk>/', admin_views.AdminComidaDetail.as_view(), name='admin_comida_detail'),
+    path('comidas/orden/', admin_views.update_comida_orden, name='update_comida_orden'),
 ]
