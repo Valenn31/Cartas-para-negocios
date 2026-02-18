@@ -65,7 +65,21 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Directorio donde se recopilarán los archivos estáticos para producción
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Directorios adicionales de archivos estáticos (si los tienes)
+STATICFILES_DIRS = [
+    # BASE_DIR / 'static',
+]
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configuración para producción
+if not DEBUG:
+    ALLOWED_HOSTS = ['*']  # Configura esto con tus dominios específicos
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
 
 CORS_ALLOW_ALL_ORIGINS = True
 

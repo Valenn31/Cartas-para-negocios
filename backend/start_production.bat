@@ -1,0 +1,16 @@
+@echo off
+echo Activando entorno virtual...
+call venv\Scripts\activate.bat
+
+echo Instalando dependencias...
+pip install -r requirements.txt
+
+echo Aplicando migraciones...
+python manage.py migrate
+
+echo Recolectando archivos estaticos...
+python manage.py collectstatic --noinput
+
+echo Iniciando servidor con Waitress en puerto 8000...
+echo Accede a: http://localhost:8000
+waitress-serve --host=0.0.0.0 --port=8000 carta_restaurantes.wsgi:application
