@@ -24,13 +24,13 @@ function App() {
   useEffect(() => {
     if (categoriaSeleccionada) {
       // Primero obtenemos las subcategorías
-      fetch(`http://localhost:8000/api/categorias/${categoriaSeleccionada}/subcategorias/`)
+      fetch(`${API_BASE}/api/categorias/${categoriaSeleccionada}/subcategorias/`)
         .then(res => res.json())
         .then(async (subcategorias) => {
           // Para cada subcategoría, obtenemos sus comidas
           const subcategoriasConComidas = await Promise.all(
             subcategorias.map(async (subcategoria) => {
-              const comidasResponse = await fetch(`http://localhost:8000/api/subcategorias/${subcategoria.id}/comidas/`);
+              const comidasResponse = await fetch(`${API_BASE}/api/subcategorias/${subcategoria.id}/comidas/`);
               const comidas = await comidasResponse.json();
               return {
                 ...subcategoria,

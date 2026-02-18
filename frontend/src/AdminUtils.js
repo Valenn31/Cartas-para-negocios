@@ -1,5 +1,6 @@
 // Funciones utilitarias para el admin
-const API_BASE = 'http://localhost:8000/api/admin';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE = `${API_BASE_URL}/api/admin`;
 
 // Generar título según la vista actual
 export const getTitle = (currentView, selectedCategoria, selectedSubcategoria) => {
