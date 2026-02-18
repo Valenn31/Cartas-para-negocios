@@ -5,7 +5,8 @@ import { CategoriasGrid, SubcategoriasGrid, ComidasGrid } from './AdminComponent
 import { CategoriaForm, SubcategoriaForm, ComidaForm } from './AdminForms';
 import { getTitle, getBreadcrumb, getAddButtonText } from './AdminUtils';
 
-const API_BASE = 'http://localhost:8000/api/admin';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE = `${API_BASE_URL}/api/admin`;
 
 function Admin() {
   // Estados de navegación

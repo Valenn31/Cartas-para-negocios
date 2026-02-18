@@ -1,7 +1,8 @@
 // Hooks personalizados para el admin
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-const API_BASE = 'http://localhost:8000/api/admin';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE = `${API_BASE_URL}/api/admin`;
 
 // Hook para autenticación
 export const useAuth = () => {
