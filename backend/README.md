@@ -4,4 +4,4 @@ Run frontend:
 
 Run Backend:
     .\venv\Scripts\Activate.ps1
-    python .\manage.py runserver
+    python .\manage.py runserver>
