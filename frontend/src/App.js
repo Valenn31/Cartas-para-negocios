@@ -6,6 +6,8 @@ function App() {
   const [subcategoriasConComidas, setSubcategoriasConComidas] = useState([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
 
+  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
   // Eliminar márgenes y padding del body
   useEffect(() => {
     document.body.style.margin = "0";
@@ -15,7 +17,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/categorias/")
+    fetch(`${API_BASE}/api/categorias/`)
       .then(res => res.json())
       .then(data => setCategorias(data));
   }, []);
