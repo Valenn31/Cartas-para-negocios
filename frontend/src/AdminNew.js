@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styles from './Admin.module.css';
 
-const API_BASE = 'http://localhost:8000/api/admin';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE = `${API_BASE_URL}/api/admin`;
 
 function Admin() {
   const [user, setUser] = useState(null);
