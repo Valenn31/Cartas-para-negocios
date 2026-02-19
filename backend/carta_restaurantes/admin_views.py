@@ -161,11 +161,20 @@ def admin_dashboard(request):
 # Vista de login
 @api_view(['POST'])
 def admin_login(request):
+    # DEBUG: Ver qué está llegando exactamente
+    print(f"DEBUG request.data: {request.data}")
+    print(f"DEBUG request.POST: {request.POST}")
+    print(f"DEBUG request.body: {request.body}")
+    
     username = request.data.get('username')
     password = request.data.get('password')
     
+    print(f"DEBUG username: '{username}', password: '{password}'")
+    
     if username and password:
         user = authenticate(username=username, password=password)
+        print(f"DEBUG authenticate result: {user}")
+        
         if user and user.is_staff:
             token, created = Token.objects.get_or_create(user=user)
             return Response({
@@ -182,8 +191,15 @@ def admin_login(request):
             return Response({'error': 'Credenciales inválidas o usuario sin permisos de administrador'}, 
                           status=status.HTTP_401_UNAUTHORIZED)
     
-    return Response({'error': 'Username y password son requeridos'}, 
-                   status=status.HTTP_400_BAD_REQUEST)
+    return Response({
+        'error': 'Username y password son requeridos',
+        'debug_data': {
+            'received_username': username,
+            'received_password': password,
+            'request_data': dict(request.data),
+            'content_type': request.content_type
+        }
+    }, status=status.HTTP_400_BAD_REQUEST)
 
 # Vista para verificar token
 @api_view(['GET'])
