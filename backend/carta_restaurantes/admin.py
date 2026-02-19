@@ -1,6 +1,15 @@
 from django.contrib import admin
 from adminsortable2.admin import SortableAdminMixin
-from .models import Categoria, Subcategoria, Comida
+from .models import Restaurante, Categoria, Subcategoria, Comida
+
+@admin.register(Restaurante)
+class RestauranteAdmin(admin.ModelAdmin):
+    list_display = ['nombre', 'slug', 'propietario', 'activo', 'fecha_creacion']
+    list_display_links = ['nombre']
+    list_filter = ['activo', 'fecha_creacion']
+    search_fields = ['nombre', 'slug', 'propietario__username']
+    list_per_page = 50
+    readonly_fields = ['fecha_creacion']
 
 @admin.register(Categoria)
 class CategoriaAdmin(SortableAdminMixin, admin.ModelAdmin):

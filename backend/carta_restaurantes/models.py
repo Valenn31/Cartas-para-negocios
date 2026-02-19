@@ -1,4 +1,27 @@
 from django.db import models
+from django.contrib.auth.models import User
+from django.utils.text import slugify
+
+class Restaurante(models.Model):
+    nombre = models.CharField(max_length=100, verbose_name='Nombre')
+    slug = models.SlugField(max_length=50, unique=True, verbose_name='Slug')
+    descripcion = models.TextField(blank=True, verbose_name='Descripción')
+    propietario = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Propietario')
+    activo = models.BooleanField(default=True, verbose_name='Activo')
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
+
+    class Meta:
+        ordering = ['nombre']
+        verbose_name = 'Restaurante'
+        verbose_name_plural = 'Restaurantes'
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.nombre)
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return self.nombre
 
 class Categoria(models.Model):
     nombre = models.CharField(max_length=100)
