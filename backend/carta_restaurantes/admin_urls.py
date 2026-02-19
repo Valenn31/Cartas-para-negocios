@@ -2,6 +2,9 @@ from django.urls import path
 from . import admin_views
 
 urlpatterns = [
+    # Dashboard de prueba
+    path('', admin_views.admin_dashboard, name='admin_dashboard'),
+    
     # Autenticación
     path('auth/login/', admin_views.admin_login, name='admin_login'),
     path('auth/verify/', admin_views.verify_token, name='verify_token'),

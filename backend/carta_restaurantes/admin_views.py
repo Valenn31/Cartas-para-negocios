@@ -24,6 +24,76 @@ def get_user_restaurant(user):
         # Si no tiene restaurante, crear uno temporal o lanzar error
         return None
 
+# Vista de dashboard de prueba
+@api_view(['GET'])
+def admin_dashboard(request):
+    """Dashboard simple para probar multi-tenant"""
+    
+    if not request.user.is_authenticated:
+        return Response({
+            'message': 'No autenticado. Haz login primero en /api/admin/auth/login/',
+            'login_url': '/api/admin/auth/login/',
+            'test_users': {
+                'admin': 'password_admin',
+                'restaurante_mario': 'test123'
+            }
+        }, status=401)
+    
+    user_restaurant = get_user_restaurant(request.user)
+    
+    if user_restaurant:
+        # Usuario con restaurante
+        categorias = Categoria.objects.filter(restaurante=user_restaurant).count()
+        subcategorias = Subcategoria.objects.filter(restaurante=user_restaurant).count()
+        comidas = Comida.objects.filter(restaurante=user_restaurant).count()
+        
+        return Response({
+            'usuario': request.user.username,
+            'restaurante': user_restaurant.nombre,
+            'slug': user_restaurant.slug,
+            'estadisticas': {
+                'categorias': categorias,
+                'subcategorias': subcategorias,
+                'comidas': comidas
+            },
+            'mensaje': f'Bienvenido a {user_restaurant.nombre}! Solo ves datos de tu restaurante.',
+            'urls_disponibles': {
+                'categorias': '/api/admin/categorias/',
+                'subcategorias': '/api/admin/subcategorias/',
+                'comidas': '/api/admin/comidas/'
+            }
+        })
+        
+    elif request.user.is_superuser:
+        # Superuser ve todo
+        categorias = Categoria.objects.all().count()
+        subcategorias = Subcategoria.objects.all().count()
+        comidas = Comida.objects.all().count()
+        restaurantes = Restaurante.objects.all().count()
+        
+        return Response({
+            'usuario': request.user.username,
+            'tipo': 'Super Admin',
+            'estadisticas_globales': {
+                'restaurantes': restaurantes,
+                'categorias': categorias,
+                'subcategorias': subcategorias,
+                'comidas': comidas
+            },
+            'mensaje': 'Eres super admin! Ves todos los datos de todos los restaurantes.',
+            'urls_disponibles': {
+                'categorias': '/api/admin/categorias/',
+                'subcategorias': '/api/admin/subcategorias/',
+                'comidas': '/api/admin/comidas/'
+            }
+        })
+    else:
+        return Response({
+            'usuario': request.user.username,
+            'error': 'Usuario sin restaurante asignado',
+            'mensaje': 'Contacta al administrador para asignar un restaurante'
+        }, status=403)
+
 # Vista de login
 @api_view(['POST'])
 def admin_login(request):
