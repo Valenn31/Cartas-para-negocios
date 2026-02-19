@@ -24,6 +24,7 @@ class Restaurante(models.Model):
         return self.nombre
 
 class Categoria(models.Model):
+    restaurante = models.ForeignKey(Restaurante, on_delete=models.CASCADE, related_name='categorias', verbose_name='Restaurante')
     nombre = models.CharField(max_length=100)
     imagen = models.ImageField(upload_to='categorias/', blank=True, null=True)
     orden = models.PositiveIntegerField(default=0, db_index=True)
@@ -32,7 +33,7 @@ class Categoria(models.Model):
         ordering = ['orden', 'nombre']
 
     def __str__(self):
-        return self.nombre
+        return f"{self.restaurante.nombre} - {self.nombre}"
 
 
 class Subcategoria(models.Model):
