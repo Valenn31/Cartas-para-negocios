@@ -1,0 +1,280 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Categorías{% endblock %}
+{% block page_title %}Gestión de Categorías{% endblock %}
+
+{% block content %}
+<div class="categories-management">
+    <!-- Header Actions -->
+    <div class="page-actions">
+        <button class="btn btn-primary" onclick="showCreateModal()">
+            <i class="fas fa-plus"></i>
+            Nueva Categoría
+        </button>
+    </div>
+    
+    {% if categorias %}
+    <div class="categories-table-card">
+        <div class="card-header">
+            <h2><i class="fas fa-tags"></i> Categorías ({{ categorias|length }})</h2>
+            <div class="table-actions">
+                <button class="btn btn-secondary" onclick="reorderCategories()">
+                    <i class="fas fa-sort"></i>
+                    Reordenar
+                </button>
+            </div>
+        </div>
+        <div class="card-content">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Orden</th>
+                            <th>Imagen</th>
+                            <th>Nombre</th>
+                            <th>Comidas</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoriesTableBody">
+                        {% for categoria in categorias %}
+                        <tr data-id="{{ categoria.id }}">
+                            <td>
+                                <span class="order-badge">{{ categoria.orden }}</span>
+                            </td>
+                            <td>
+                                {% if categoria.imagen %}
+                                <img src="{{ categoria.imagen.url }}" alt="{{ categoria.nombre }}" class="table-image">
+                                {% else %}
+                                <div class="image-placeholder">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="item-info">
+                                    <strong>{{ categoria.nombre }}</strong>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="count-badge">
+                                    {{ categoria.comida_set.count }} comidas
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge active">Activa</span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn edit" onclick="editCategory({{ categoria.id }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn delete" onclick="deleteCategory({{ categoria.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state-large">
+        <i class="fas fa-tags"></i>
+        <h3>No hay categorías</h3>
+        <p>Crea tu primera categoría para organizar el menú de {{ restaurant.nombre }}</p>
+        <button class="btn btn-primary btn-large" onclick="showCreateModal()">
+            <i class="fas fa-plus"></i>
+            Crear Primera Categoría
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Create/Edit Modal -->
+<div id="categoryModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Nueva Categoría</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        
+        <form id="categoryForm" class="modal-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="categoryName">
+                        <i class="fas fa-tag"></i>
+                        Nombre de la Categoría
+                    </label>
+                    <input type="text" id="categoryName" name="nombre" required maxlength="100">
+                </div>
+                
+                <div class="form-group">
+                    <label for="categoryOrder">
+                        <i class="fas fa-sort-numeric-up"></i>
+                        Orden
+                    </label>
+                    <input type="number" id="categoryOrder" name="orden" min="1" required>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="categoryImage">
+                        <i class="fas fa-image"></i>
+                        Imagen
+                    </label>
+                    <div class="image-upload">
+                        <input type="file" id="categoryImage" name="imagen" accept="image/*" onchange="previewImage(this)">
+                        <div class="image-preview" id="imagePreview">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Arrastra una imagen aquí o haz clic para seleccionar</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    <span id="submitText">Crear Categoría</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content small">
+        <div class="modal-header danger">
+            <h3>Eliminar Categoría</h3>
+            <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="warning-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <p>¿Estás seguro de que deseas eliminar esta categoría?</p>
+            <p class="warning-text">Esta acción también eliminará todas las comidas asociadas y no se puede deshacer.</p>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                Cancelar
+            </button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                <i class="fas fa-trash"></i>
+                Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentCategoryId = null;
+let deleteTargetId = null;
+
+function showCreateModal() {
+    document.getElementById('modalTitle').textContent = 'Nueva Categoría';
+    document.getElementById('submitText').textContent = 'Crear Categoría';
+    document.getElementById('categoryForm').reset();
+    document.getElementById('imagePreview').innerHTML = `
+        <i class="fas fa-cloud-upload-alt"></i>
+        <p>Arrastra una imagen aquí o haz clic para seleccionar</p>
+    `;
+    currentCategoryId = null;
+    document.getElementById('categoryModal').classList.add('show');
+}
+
+function editCategory(id) {
+    // TODO: Load category data and show edit modal
+    currentCategoryId = id;
+    document.getElementById('modalTitle').textContent = 'Editar Categoría';
+    document.getElementById('submitText').textContent = 'Guardar Cambios';
+    document.getElementById('categoryModal').classList.add('show');
+}
+
+function deleteCategory(id) {
+    deleteTargetId = id;
+    document.getElementById('deleteModal').classList.add('show');
+}
+
+function closeModal() {
+    document.getElementById('categoryModal').classList.remove('show');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('show');
+    deleteTargetId = null;
+}
+
+function confirmDelete() {
+    if (deleteTargetId) {
+        // TODO: Implement delete functionality
+        console.log('Deleting category:', deleteTargetId);
+        closeDeleteModal();
+        AdminUtils.showSuccess('Categoría eliminada exitosamente');
+    }
+}
+
+function previewImage(input) {
+    const preview = document.getElementById('imagePreview');
+    const file = input.files[0];
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="preview-img">`;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function reorderCategories() {
+    AdminUtils.showSuccess('Modo de reordenación activado. Arrastra las filas para reordenar.');
+    // TODO: Implement drag and drop reordering
+}
+
+// Form submission
+document.getElementById('categoryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const url = currentCategoryId ? 
+        `/api/admin/categorias/${currentCategoryId}/` : 
+        '/api/admin/categorias/';
+    const method = currentCategoryId ? 'PUT' : 'POST';
+    
+    AdminUtils.showLoading(true);
+    
+    // TODO: Implement API call
+    setTimeout(() => {
+        AdminUtils.showLoading(false);
+        AdminUtils.showSuccess(currentCategoryId ? 'Categoría actualizada' : 'Categoría creada exitosamente');
+        closeModal();
+        // Reload page or update table
+        location.reload();
+    }, 1000);
+});
+
+// Modal close on background click
+document.getElementById('categoryModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+</script>
+{% endblock %}

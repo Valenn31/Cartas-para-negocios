@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Cartas para Negocios</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'admin/style.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <h1>Cartas para Negocios</h1>
+                <p>Sistema Multi-Tenant para Restaurantes</p>
+            </div>
+            
+            <form class="login-form" id="loginForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i>
+                        Usuario
+                    </label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i>
+                        Contraseña
+                    </label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Iniciar Sesión
+                </button>
+            </form>
+            
+            <div class="demo-accounts">
+                <h3>Cuentas de Demostración</h3>
+                <div class="demo-buttons">
+                    <button class="demo-btn" onclick="fillDemo('admin', 'admin123')">
+                        <i class="fas fa-crown"></i>
+                        Admin Principal
+                    </button>
+                    <button class="demo-btn" onclick="fillDemo('restaurante_mario', 'test123')">
+                        <i class="fas fa-pizza-slice"></i>
+                        Pizzería Mario
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature">
+                <i class="fas fa-users"></i>
+                <h3>Multi-Tenant</h3>
+                <p>Cada restaurante ve solo sus datos</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-cloud"></i>
+                <h3>En la Nube</h3>
+                <p>Desplegado en Railway + Vercel</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-mobile-alt"></i>
+                <h3>Responsivo</h3>
+                <p>Funciona en cualquier dispositivo</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Iniciando sesión...</p>
+    </div>
+    
+    <div id="errorAlert" class="alert alert-error">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span id="errorMessage"></span>
+        <button onclick="closeAlert()" class="close-btn">&times;</button>
+    </div>
+    
+    <script src="{% static 'admin/script.js' %}"></script>
+</body>
+</html>

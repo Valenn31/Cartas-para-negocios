@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard{% endblock %} - Cartas para Negocios</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'admin/style.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="admin-wrapper">
+        {% if user.is_authenticated %}
+        <nav class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-utensils"></i> Admin Panel</h2>
+                <div class="user-info">
+                    <div class="avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-details">
+                        <span class="username">{{ user.username }}</span>
+                        <span class="role">{{ restaurant.nombre|default:"Administrador" }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li><a href="{% url 'admin_web_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_web_dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-dashboard"></i> Dashboard
+                </a></li>
+                <li><a href="{% url 'admin_web_categorias' %}" class="{% if request.resolver_match.url_name == 'admin_web_categorias' %}active{% endif %}">
+                    <i class="fas fa-tags"></i> Categorías
+                </a></li>
+                <li><a href="{% url 'admin_web_comidas' %}" class="{% if request.resolver_match.url_name == 'admin_web_comidas' %}active{% endif %}">
+                    <i class="fas fa-hamburger"></i> Comidas
+                </a></li>
+                <li><a href="{% url 'admin_web_logout' %}" class="logout">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a></li>
+            </ul>
+        </nav>
+        
+        <main class="admin-main">
+            <div class="main-header">
+                <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                {% if restaurant %}
+                <div class="restaurant-badge">
+                    <i class="fas fa-store"></i>
+                    {{ restaurant.nombre }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="main-content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+        {% endif %}
+    </div>
+    
+    <script src="{% static 'admin/script.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

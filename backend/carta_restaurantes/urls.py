@@ -7,6 +7,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('carta_restaurantes.api_urls')),
     path('api/admin/', include('carta_restaurantes.admin_urls')),
+    path('admin/web/', include('carta_restaurantes.web_urls')),  # Nueva interfaz web
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

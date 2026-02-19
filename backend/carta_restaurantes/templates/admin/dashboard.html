@@ -1,0 +1,205 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- Stats Cards -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-tags"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ stats.total_categorias }}</h3>
+                <p>Categorías</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-hamburger"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ stats.total_comidas }}</h3>
+                <p>Comidas</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-store"></i>
+            </div>
+            <div class="stat-content">
+                <h3>1</h3>
+                <p>Restaurante</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ stats.promedio_precio|default:"0" }}€</h3>
+                <p>Precio Promedio</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Restaurant Info -->
+    <div class="restaurant-info-card">
+        <div class="card-header">
+            <h2><i class="fas fa-store"></i> Información del Restaurante</h2>
+        </div>
+        <div class="card-content">
+            <div class="restaurant-details">
+                <div class="detail-item">
+                    <strong>Nombre:</strong>
+                    <span>{{ restaurant.nombre }}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Slug:</strong>
+                    <span>{{ restaurant.slug }}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Descripción:</strong>
+                    <span>{{ restaurant.descripcion|default:"Sin descripción" }}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Propietario:</strong>
+                    <span>{{ user.username }} ({{ user.email }})</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Categories Preview -->
+    <div class="categories-preview-card">
+        <div class="card-header">
+            <h2><i class="fas fa-tags"></i> Categorías</h2>
+            <a href="{% url 'admin_web_categorias' %}" class="view-all-btn">
+                Ver Todas <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        <div class="card-content">
+            {% if categorias %}
+                <div class="categories-grid">
+                    {% for categoria in categorias %}
+                    <div class="category-item">
+                        <div class="category-header">
+                            {% if categoria.imagen %}
+                            <img src="{{ categoria.imagen.url }}" alt="{{ categoria.nombre }}" class="category-image">
+                            {% else %}
+                            <div class="category-placeholder">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            {% endif %}
+                            <h4>{{ categoria.nombre }}</h4>
+                        </div>
+                        <div class="category-stats">
+                            <span class="stat">
+                                <i class="fas fa-hamburger"></i>
+                                {{ categoria.comidas_count }} comidas
+                            </span>
+                            <span class="stat">
+                                <i class="fas fa-sort-numeric-up"></i>
+                                Orden: {{ categoria.orden }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-tags"></i>
+                    <h3>No hay categorías</h3>
+                    <p>Empieza creando tu primera categoría</p>
+                    <a href="{% url 'admin_web_categorias' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Crear Categoría
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="activity-card">
+        <div class="card-header">
+            <h2><i class="fas fa-clock"></i> Actividad Reciente</h2>
+        </div>
+        <div class="card-content">
+            <div class="activity-list">
+                <div class="activity-item">
+                    <div class="activity-icon success">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p>Sesión iniciada correctamente</p>
+                        <span class="time">Hace unos segundos</span>
+                    </div>
+                </div>
+                
+                {% if stats.total_categorias > 0 %}
+                <div class="activity-item">
+                    <div class="activity-icon info">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p>{{ stats.total_categorias }} categorías configuradas</p>
+                        <span class="time">Sistema</span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if stats.total_comidas > 0 %}
+                <div class="activity-item">
+                    <div class="activity-icon info">
+                        <i class="fas fa-hamburger"></i>
+                    </div>
+                    <div class="activity-content">
+                        <p>{{ stats.total_comidas }} comidas en el menú</p>
+                        <span class="time">Sistema</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions Floating Button -->
+<div class="quick-actions">
+    <button class="quick-action-btn main-btn" onclick="toggleQuickActions()">
+        <i class="fas fa-plus"></i>
+    </button>
+    <div class="quick-actions-menu">
+        <a href="{% url 'admin_web_categorias' %}" class="quick-action-btn">
+            <i class="fas fa-tags"></i>
+            <span>Nueva Categoría</span>
+        </a>
+        <a href="{% url 'admin_web_comidas' %}" class="quick-action-btn">
+            <i class="fas fa-hamburger"></i>
+            <span>Nueva Comida</span>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleQuickActions() {
+    const menu = document.querySelector('.quick-actions-menu');
+    menu.classList.toggle('active');
+}
+
+// Close quick actions when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.quick-actions')) {
+        document.querySelector('.quick-actions-menu').classList.remove('active');
+    }
+});
+</script>
+{% endblock %}
