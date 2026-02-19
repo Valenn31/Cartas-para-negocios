@@ -1,0 +1,2 @@
+release: cd backend && python manage.py migrate && python manage.py loaddata fixtures/comidas_fixture.json
+web: cd backend && waitress-serve --host=0.0.0.0 --port=$PORT carta_restaurantes.wsgi:application
