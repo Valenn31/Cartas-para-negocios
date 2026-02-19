@@ -6,8 +6,23 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db import transaction
-from .models import Categoria, Subcategoria, Comida
+from django.shortcuts import get_object_or_404
+from .models import Categoria, Subcategoria, Comida, Restaurante
 from .serializers import CategoriaSerializer, SubcategoriaSerializer, ComidaSerializer
+
+# Función helper para obtener el restaurante del usuario
+def get_user_restaurant(user):
+    """Obtiene el restaurante asociado al usuario logueado"""
+    if user.is_superuser:
+        # Superuser puede ver todos, devolvemos None para indicarlo
+        return None
+    
+    # Buscar restaurante donde el usuario es propietario
+    try:
+        return Restaurante.objects.get(propietario=user, activo=True)
+    except Restaurante.DoesNotExist:
+        # Si no tiene restaurante, crear uno temporal o lanzar error
+        return None
 
 # Vista de login
 @api_view(['POST'])
@@ -55,19 +70,47 @@ def verify_token(request):
 
 # CRUD para Categorías
 class AdminCategoriaList(generics.ListCreateAPIView):
-    queryset = Categoria.objects.all().order_by('orden')
     serializer_class = CategoriaSerializer
     permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user_restaurant = get_user_restaurant(self.request.user)
+        if user_restaurant:
+            # Usuario normal: solo sus categorías
+            return Categoria.objects.filter(restaurante=user_restaurant).order_by('orden')
+        elif self.request.user.is_superuser:
+            # Superuser: todas las categorías
+            return Categoria.objects.all().order_by('orden')
+        else:
+            # Usuario sin restaurante: ninguna categoría
+            return Categoria.objects.none()
     
     def perform_create(self, serializer):
         if not self.request.user.is_staff:
             raise PermissionError("Usuario sin permisos de administrador")
-        serializer.save()
+        
+        user_restaurant = get_user_restaurant(self.request.user)
+        if user_restaurant:
+            # Asignar automáticamente el restaurante del usuario
+            serializer.save(restaurante=user_restaurant)
+        elif self.request.user.is_superuser:
+            # Superuser debe especificar el restaurante manualmente
+            serializer.save()
+        else:
+            raise PermissionError("Usuario sin restaurante asignado")
 
 class AdminCategoriaDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
     permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user_restaurant = get_user_restaurant(self.request.user)
+        if user_restaurant:
+            return Categoria.objects.filter(restaurante=user_restaurant)
+        elif self.request.user.is_superuser:
+            return Categoria.objects.all()
+        else:
+            return Categoria.objects.none()
     
     def perform_update(self, serializer):
         if not self.request.user.is_staff:
