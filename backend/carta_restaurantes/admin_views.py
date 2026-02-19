@@ -258,6 +258,43 @@ def admin_login(request):
         }
     }, status=status.HTTP_400_BAD_REQUEST)
 
+# Vista simple sin autenticación para testing rápido
+@api_view(['GET'])
+def simple_dashboard(request):
+    """Vista simple para ver datos sin necesidad de token (solo para testing)"""
+    
+    # Obtener todos los restaurantes
+    restaurantes = Restaurante.objects.all()
+    
+    data = {
+        'message': '¡Sistema SaaS Multi-Tenant funcionando! 🎉',
+        'total_restaurantes': restaurantes.count(),
+        'restaurantes': []
+    }
+    
+    for restaurant in restaurantes:
+        categorias = Categoria.objects.filter(restaurante=restaurant)
+        comidas = Comida.objects.filter(restaurante=restaurant)
+        
+        data['restaurantes'].append({
+            'nombre': restaurant.nombre,
+            'slug': restaurant.slug,
+            'propietario': restaurant.propietario.username,
+            'stats': {
+                'categorias': categorias.count(),
+                'comidas': comidas.count()
+            },
+            'categorias': [
+                {
+                    'nombre': cat.nombre,
+                    'orden': cat.orden
+                }
+                for cat in categorias.order_by('orden')[:3]  # Solo primeras 3
+            ]
+        })
+    
+    return Response(data)
+
 # Vista para verificar token
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
