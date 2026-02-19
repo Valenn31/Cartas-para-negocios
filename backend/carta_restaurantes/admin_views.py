@@ -161,6 +161,8 @@ def admin_dashboard(request):
 # Vista de login
 @api_view(['POST'])
 def admin_login(request):
+    import json
+    
     # Manejar tanto JSON como form-data
     username = None
     password = None
@@ -175,6 +177,18 @@ def admin_login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
     
+    # Si aún no funciona, parsear JSON manualmente desde el body
+    if not username or not password:
+        try:
+            # Obtener el contenido crudo y parsearlo como JSON
+            body_unicode = request.body.decode('utf-8') if hasattr(request, 'body') else ''
+            if body_unicode:
+                body_data = json.loads(body_unicode)
+                username = body_data.get('username')
+                password = body_data.get('password')
+        except (json.JSONDecodeError, UnicodeDecodeError, AttributeError):
+            pass
+    
     # DEBUG
     print(f"DEBUG username: '{username}', password: '{password}'")
     print(f"DEBUG content_type: {request.content_type}")
@@ -187,14 +201,15 @@ def admin_login(request):
             token, created = Token.objects.get_or_create(user=user)
             return Response({
                 'token': token.key,
-                'message': 'Login exitoso',
+                'message': 'Login exitoso! 🎉',
                 'user': {
                     'id': user.id,
                     'username': user.username,
                     'email': user.email,
                     'is_staff': user.is_staff,
                     'is_superuser': user.is_superuser
-                }
+                },
+                'next_step': 'Ve a /api/admin/ para ver tu dashboard'
             })
         else:
             return Response({'error': 'Credenciales inválidas o usuario sin permisos de administrador'}, 
