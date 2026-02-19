@@ -131,6 +131,7 @@ function closeSuccessAlert() {
 }
 
 function getCSRFToken() {
+    // Buscar en cookies primero
     const cookies = document.cookie.split(';');
     for (let cookie of cookies) {
         const [name, value] = cookie.trim().split('=');
@@ -138,6 +139,19 @@ function getCSRFToken() {
             return value;
         }
     }
+    
+    // Buscar en input hidden como fallback
+    const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    if (csrfInput) {
+        return csrfInput.value;
+    }
+    
+    // Buscar en meta tag como último recurso
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    if (csrfMeta) {
+        return csrfMeta.getAttribute('content');
+    }
+    
     return '';
 }
 

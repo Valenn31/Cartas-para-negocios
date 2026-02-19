@@ -85,6 +85,20 @@ if not DEBUG:
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+# CSRF Configuration for Railway
+CSRF_TRUSTED_ORIGINS = [
+    'https://cartas-para-negocios-production.up.railway.app',
+    'http://cartas-para-negocios-production.up.railway.app',
+    'https://*.railway.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+
+# También asegurar que las cookies CSRF funcionen correctamente
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_HTTPONLY = False  # Permitir acceso desde JavaScript
+CSRF_COOKIE_SAMESITE = 'Lax'
+
 # REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
