@@ -5,6 +5,9 @@ urlpatterns = [
     # Dashboard de prueba
     path('', admin_views.admin_dashboard, name='admin_dashboard'),
     
+    # Endpoint temporal para crear usuarios de prueba
+    path('setup-test-users/', admin_views.setup_test_users, name='setup_test_users'),
+    
     # Autenticación
     path('auth/login/', admin_views.admin_login, name='admin_login'),
     path('auth/verify/', admin_views.verify_token, name='verify_token'),

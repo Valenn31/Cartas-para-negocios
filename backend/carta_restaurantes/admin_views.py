@@ -24,6 +24,70 @@ def get_user_restaurant(user):
         # Si no tiene restaurante, crear uno temporal o lanzar error
         return None
 
+# Endpoint temporal para crear usuarios de prueba
+@api_view(['GET'])
+def setup_test_users(request):
+    """Crear usuarios de prueba con credenciales conocidas - SOLO PARA DESARROLLO"""
+    
+    try:
+        # Crear/actualizar usuario admin
+        admin_user, created = User.objects.get_or_create(
+            username='admin',
+            defaults={'email': 'admin@test.com', 'is_staff': True, 'is_superuser': True}
+        )
+        admin_user.set_password('admin123')
+        admin_user.save()
+        
+        # Crear/actualizar usuario restaurante test
+        mario_user, created = User.objects.get_or_create(
+            username='restaurante_mario',
+            defaults={'email': 'mario@test.com', 'is_staff': True}
+        )
+        mario_user.set_password('test123')
+        mario_user.save()
+        
+        # Crear restaurante por defecto para admin si no existe
+        admin_restaurant, created = Restaurante.objects.get_or_create(
+            slug='restaurante-principal',
+            defaults={
+                'nombre': 'Restaurante Principal',
+                'descripcion': 'Restaurante original',
+                'propietario': admin_user
+            }
+        )
+        
+        # Crear restaurante para mario
+        mario_restaurant, created = Restaurante.objects.get_or_create(
+            slug='pizzeria-mario',
+            defaults={
+                'nombre': 'Pizzería Mario',
+                'descripcion': 'Restaurante de prueba',
+                'propietario': mario_user
+            }
+        )
+        
+        return Response({
+            'message': 'Usuarios de prueba creados exitosamente',
+            'usuarios': {
+                'admin': {
+                    'username': 'admin',
+                    'password': 'admin123',
+                    'tipo': 'Super Admin',
+                    'restaurante': admin_restaurant.nombre
+                },
+                'restaurante_mario': {
+                    'username': 'restaurante_mario', 
+                    'password': 'test123',
+                    'tipo': 'Dueño de Restaurante',
+                    'restaurante': mario_restaurant.nombre
+                }
+            },
+            'next_step': 'Ahora puedes hacer login en /api/admin/auth/login/ con estas credenciales'
+        })
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
 # Vista de dashboard de prueba
 @api_view(['GET'])
 def admin_dashboard(request):
