@@ -37,6 +37,7 @@ class Categoria(models.Model):
 
 
 class Subcategoria(models.Model):
+    restaurante = models.ForeignKey(Restaurante, on_delete=models.CASCADE, related_name='subcategorias', verbose_name='Restaurante')
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name='subcategorias')
     nombre = models.CharField(max_length=100)
     orden = models.PositiveIntegerField(default=0, db_index=True)
@@ -47,10 +48,11 @@ class Subcategoria(models.Model):
         verbose_name_plural = 'Subcategorías'
 
     def __str__(self):
-        return f"{self.categoria.nombre} - {self.nombre}"
+        return f"{self.restaurante.nombre} - {self.categoria.nombre} - {self.nombre}"
 
 
 class Comida(models.Model):
+    restaurante = models.ForeignKey(Restaurante, on_delete=models.CASCADE, related_name='comidas', verbose_name='Restaurante')
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
     subcategoria = models.ForeignKey(Subcategoria, on_delete=models.CASCADE, blank=True, null=True)
     nombre = models.CharField(max_length=100)
@@ -60,4 +62,4 @@ class Comida(models.Model):
     orden = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return self.nombre
+        return f"{self.restaurante.nombre} - {self.nombre}"
