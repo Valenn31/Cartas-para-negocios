@@ -1,8 +1,10 @@
 [build]
-command = "cd backend && pip install -r requirements.txt"
+# Indicar que es Python y cambiar al directorio backend
+builder = "NIXPACKS"
+buildCommand = "cd backend && pip install -r requirements.txt"
 
 [deploy]
-startCommand = "cd backend && python manage.py migrate && python manage.py collectstatic --noinput && waitress-serve --port=$PORT carta_restaurantes.wsgi:application"
+startCommand = "cd backend && python manage.py migrate && python manage.py collectstatic --noinput && waitress-serve --host=0.0.0.0 --port=$PORT carta_restaurantes.wsgi:application"
 
 [environments.production]
-# Las variables de entorno se configuran en el dashboard de Railway
+# Variables de entorno configuradas en Railway dashboard
