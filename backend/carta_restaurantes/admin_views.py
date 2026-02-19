@@ -295,6 +295,77 @@ def simple_dashboard(request):
     
     return Response(data)
 
+# Vista de test con token por URL (más fácil de probar)
+@api_view(['GET'])
+def test_dashboard(request):
+    """Dashboard con token por parámetro GET (para testing fácil)"""
+    
+    # Obtener token desde parámetro GET
+    token_key = request.GET.get('token')
+    
+    if not token_key:
+        return Response({
+            'error': 'Se necesita token',
+            'help': 'Agrega ?token=TU_TOKEN a la URL',
+            'example': '/api/admin/test/?token=235f3339c92ab97e909d06c24447c7ad12d2c5e2'
+        }, status=400)
+    
+    try:
+        # Buscar el token
+        token = Token.objects.get(key=token_key)
+        user = token.user
+        
+        # Verificar que sea staff
+        if not user.is_staff:
+            return Response({'error': 'Usuario sin permisos de administrador'}, status=403)
+        
+        # Obtener restaurante del usuario
+        user_restaurant = get_user_restaurant(user)
+        
+        if not user_restaurant:
+            return Response({
+                'error': 'Usuario no tiene restaurante asignado',
+                'user': user.username
+            }, status=400)
+        
+        # Obtener datos del restaurante
+        categorias = Categoria.objects.filter(restaurante=user_restaurant)
+        comidas = Comida.objects.filter(restaurante=user_restaurant)
+        
+        return Response({
+            'success': True,
+            'message': f'¡Tenant isolation funcionando! 🎉',
+            'user': {
+                'username': user.username,
+                'email': user.email,
+                'is_superuser': user.is_superuser
+            },
+            'restaurant': {
+                'nombre': user_restaurant.nombre,
+                'slug': user_restaurant.slug,
+                'descripcion': user_restaurant.descripcion
+            },
+            'stats': {
+                'total_categorias': categorias.count(),
+                'total_comidas': comidas.count()
+            },
+            'categorias': [
+                {
+                    'id': cat.id,
+                    'nombre': cat.nombre,
+                    'orden': cat.orden
+                }
+                for cat in categorias.order_by('orden')[:5]  # Solo primeras 5
+            ],
+            'nota': 'Este usuario solo ve datos de SU restaurante'
+        })
+        
+    except Token.DoesNotExist:
+        return Response({
+            'error': 'Token inválido',
+            'help': 'Haz login primero para obtener un token válido'
+        }, status=401)
+
 # Vista para verificar token
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

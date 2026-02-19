@@ -5,6 +5,7 @@ urlpatterns = [
     # Dashboard de prueba
     path('', admin_views.admin_dashboard, name='admin_dashboard'),
     path('simple/', admin_views.simple_dashboard, name='simple_dashboard'),  # Nueva vista sin auth
+    path('test/', admin_views.test_dashboard, name='test_dashboard'),  # Vista con token por URL
     
     # Endpoint temporal para crear usuarios de prueba
     path('setup-test-users/', admin_views.setup_test_users, name='setup_test_users'),
