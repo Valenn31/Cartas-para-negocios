@@ -163,35 +163,49 @@ def admin_dashboard(request):
 def admin_login(request):
     import json
     
-    # Manejar tanto JSON como form-data
+    # Estrategia: parsear JSON manualmente PRIMERO (antes de leer el stream)
     username = None
     password = None
     
-    # Intentar obtener de request.data (JSON/DRF)
-    if request.data:
-        username = request.data.get('username')
-        password = request.data.get('password')
+    # DEBUG
+    print(f"DEBUG content_type: {request.content_type}")
     
-    # Si no funcionó, intentar desde POST (form-data)
-    if not username or not password:
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-    
-    # Si aún no funciona, parsear JSON manualmente desde el body
-    if not username or not password:
+    # Si el Content-Type está mal pero el contenido es JSON, parsearlo manualmente
+    if request.content_type == 'application/x-www-form-urlencoded':
         try:
-            # Obtener el contenido crudo y parsearlo como JSON
-            body_unicode = request.body.decode('utf-8') if hasattr(request, 'body') else ''
-            if body_unicode:
+            # Intentar parsear como JSON primero (para casos de Content-Type incorrecto)
+            body_unicode = request.body.decode('utf-8')
+            print(f"DEBUG raw body: {body_unicode}")
+            
+            # Verificar si realmente es JSON
+            if body_unicode.strip().startswith('{'):
                 body_data = json.loads(body_unicode)
                 username = body_data.get('username')
                 password = body_data.get('password')
-        except (json.JSONDecodeError, UnicodeDecodeError, AttributeError):
-            pass
+                print(f"DEBUG parsed from manual JSON: username='{username}', password='{password}'")
+        except (json.JSONDecodeError, UnicodeDecodeError, AttributeError) as e:
+            print(f"DEBUG manual JSON parsing failed: {e}")
+            # Si falla, intentar como form-data normal
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            print(f"DEBUG fallback to POST: username='{username}', password='{password}'")
+    else:
+        # Content-Type correcto, usar métodos normales
+        try:
+            # Intentar DRF primero
+            username = request.data.get('username')
+            password = request.data.get('password')
+            print(f"DEBUG from request.data: username='{username}', password='{password}'")
+            
+            # Si no funcionó, intentar POST
+            if not username or not password:
+                username = request.POST.get('username')
+                password = request.POST.get('password')
+                print(f"DEBUG fallback to POST: username='{username}', password='{password}'")
+        except Exception as e:
+            print(f"DEBUG normal parsing failed: {e}")
     
-    # DEBUG
-    print(f"DEBUG username: '{username}', password: '{password}'")
-    print(f"DEBUG content_type: {request.content_type}")
+    print(f"DEBUG final: username='{username}', password='{password}'")
     
     if username and password:
         user = authenticate(username=username, password=password)
