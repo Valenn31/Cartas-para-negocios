@@ -1,6 +1,0 @@
-# Railway configuration
-[build]
-builder = "NIXPACKS"
-
-[deploy]
-# Usar el Procfile para comandos de deploy
