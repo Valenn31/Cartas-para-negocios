@@ -161,15 +161,23 @@ def admin_dashboard(request):
 # Vista de login
 @api_view(['POST'])
 def admin_login(request):
-    # DEBUG: Ver qué está llegando exactamente
-    print(f"DEBUG request.data: {request.data}")
-    print(f"DEBUG request.POST: {request.POST}")
-    print(f"DEBUG request.body: {request.body}")
+    # Manejar tanto JSON como form-data
+    username = None
+    password = None
     
-    username = request.data.get('username')
-    password = request.data.get('password')
+    # Intentar obtener de request.data (JSON/DRF)
+    if request.data:
+        username = request.data.get('username')
+        password = request.data.get('password')
     
+    # Si no funcionó, intentar desde POST (form-data)
+    if not username or not password:
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+    
+    # DEBUG
     print(f"DEBUG username: '{username}', password: '{password}'")
+    print(f"DEBUG content_type: {request.content_type}")
     
     if username and password:
         user = authenticate(username=username, password=password)
@@ -179,6 +187,7 @@ def admin_login(request):
             token, created = Token.objects.get_or_create(user=user)
             return Response({
                 'token': token.key,
+                'message': 'Login exitoso',
                 'user': {
                     'id': user.id,
                     'username': user.username,
@@ -193,11 +202,10 @@ def admin_login(request):
     
     return Response({
         'error': 'Username y password son requeridos',
-        'debug_data': {
-            'received_username': username,
-            'received_password': password,
-            'request_data': dict(request.data),
-            'content_type': request.content_type
+        'debug_info': {
+            'content_type': request.content_type,
+            'username_received': bool(username),
+            'password_received': bool(password)
         }
     }, status=status.HTTP_400_BAD_REQUEST)
 
