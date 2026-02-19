@@ -175,21 +175,33 @@ def admin_login(request):
         try:
             # Intentar parsear como JSON primero (para casos de Content-Type incorrecto)
             body_unicode = request.body.decode('utf-8')
-            print(f"DEBUG raw body: {body_unicode}")
+            print(f"DEBUG raw body: '{body_unicode}'")
+            print(f"DEBUG body length: {len(body_unicode)}")
+            print(f"DEBUG body starts with {{: {body_unicode.strip().startswith('{') if body_unicode else False}")
             
             # Verificar si realmente es JSON
-            if body_unicode.strip().startswith('{'):
+            if body_unicode and body_unicode.strip().startswith('{'):
+                print("DEBUG: Attempting to parse as JSON...")
                 body_data = json.loads(body_unicode)
+                print(f"DEBUG body_data: {body_data}")
                 username = body_data.get('username')
                 password = body_data.get('password')
                 print(f"DEBUG parsed from manual JSON: username='{username}', password='{password}'")
-        except (json.JSONDecodeError, UnicodeDecodeError, AttributeError) as e:
+            else:
+                print("DEBUG: Body doesn't look like JSON, trying POST data...")
+                # Si falla, intentar como form-data normal
+                username = request.POST.get('username')
+                password = request.POST.get('password')
+                print(f"DEBUG fallback to POST: username='{username}', password='{password}'")
+        except Exception as e:
             print(f"DEBUG manual JSON parsing failed: {e}")
+            print(f"DEBUG Exception type: {type(e)}")
             # Si falla, intentar como form-data normal
             username = request.POST.get('username')
             password = request.POST.get('password')
-            print(f"DEBUG fallback to POST: username='{username}', password='{password}'")
+            print(f"DEBUG fallback to POST after exception: username='{username}', password='{password}'")
     else:
+        print("DEBUG: Content-Type is correct, using normal methods...")
         # Content-Type correcto, usar métodos normales
         try:
             # Intentar DRF primero
@@ -234,7 +246,9 @@ def admin_login(request):
         'debug_info': {
             'content_type': request.content_type,
             'username_received': bool(username),
-            'password_received': bool(password)
+            'password_received': bool(password),
+            'has_body': hasattr(request, 'body'),
+            'body_preview': str(request.body)[:100] if hasattr(request, 'body') else 'No body'
         }
     }, status=status.HTTP_400_BAD_REQUEST)
 
