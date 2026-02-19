@@ -366,6 +366,28 @@ def test_dashboard(request):
             'help': 'Haz login primero para obtener un token válido'
         }, status=401)
 
+# Vista para debug - ver todos los tokens
+@api_view(['GET'])
+def debug_tokens(request):
+    """Ver todos los tokens para debug"""
+    from rest_framework.authtoken.models import Token
+    
+    tokens_info = []
+    for token in Token.objects.all():
+        tokens_info.append({
+            'user': token.user.username,
+            'key': token.key[:20] + '...',  # Solo primeros 20 chars por seguridad
+            'created': token.created,
+            'user_is_staff': token.user.is_staff
+        })
+    
+    return Response({
+        'message': 'Tokens existentes',
+        'count': len(tokens_info),
+        'tokens': tokens_info,
+        'help': 'Usa uno de estos tokens para probar'
+    })
+
 # Vista para verificar token
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
