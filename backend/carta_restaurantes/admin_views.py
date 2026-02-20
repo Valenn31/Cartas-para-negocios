@@ -420,17 +420,7 @@ def test_dashboard(request):
                 'error': 'Usuario sin restaurante asignado',
                 'mensaje': 'Contacta al administrador para asignar un restaurante'
             }, status=403)
-            'categorias': [
-                {
-                    'id': cat.id,
-                    'nombre': cat.nombre,
-                    'orden': cat.orden
-                }
-                for cat in categorias.order_by('orden')[:5]  # Solo primeras 5
-            ],
-            'nota': 'Este usuario solo ve datos de SU restaurante'
-        })
-        
+            
     except Token.DoesNotExist:
         return Response({
             'error': 'Token inválido',
