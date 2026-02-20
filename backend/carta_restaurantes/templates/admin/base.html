@@ -27,16 +27,16 @@
             </div>
             
             <ul class="nav-menu">
-                <li><a href="{% url 'admin_web_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_web_dashboard' %}active{% endif %}">
+                <li><a href="javascript:goToDashboard()" class="{% if request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'restaurant_dashboard' %}active{% endif %}">
                     <i class="fas fa-chart-dashboard"></i> Dashboard
                 </a></li>
-                <li><a href="{% url 'admin_web_categorias' %}" class="{% if request.resolver_match.url_name == 'admin_web_categorias' %}active{% endif %}">
+                <li><a href="{% url 'manage_categories' %}" class="{% if request.resolver_match.url_name == 'manage_categories' %}active{% endif %}">
                     <i class="fas fa-tags"></i> Categorías
                 </a></li>
-                <li><a href="{% url 'admin_web_comidas' %}" class="{% if request.resolver_match.url_name == 'admin_web_comidas' %}active{% endif %}">
+                <li><a href="{% url 'manage_foods' %}" class="{% if request.resolver_match.url_name == 'manage_foods' %}active{% endif %}">
                     <i class="fas fa-hamburger"></i> Comidas
                 </a></li>
-                <li><a href="{% url 'admin_web_logout' %}" class="logout">
+                <li><a href="{% url 'simple_login' %}" onclick="logout(); return false;" class="logout">
                     <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                 </a></li>
             </ul>
@@ -60,7 +60,25 @@
         {% endif %}
     </div>
     
-    <script src="{% static 'admin/script.js' %}"></script>
+    <script>
+        function logout() {
+            // Limpiar localStorage si existe
+            if (typeof(Storage) !== "undefined") {
+                localStorage.removeItem('admin_token');
+            }
+            // Redirigir al login
+            window.location.href = "{% url 'simple_login' %}";
+        }
+        
+        // Función para obtener el dashboard apropiado según el usuario
+        function goToDashboard() {
+            {% if user.is_superuser %}
+                window.location.href = "{% url 'admin_dashboard' %}";
+            {% else %}
+                window.location.href = "{% url 'restaurant_dashboard' %}";
+            {% endif %}
+        }
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
