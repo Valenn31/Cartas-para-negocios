@@ -4,6 +4,123 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login as auth_login
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from .models import Categoria, Subcategoria, Comida, Restaurante
+
+# Helper function para obtener el restaurante del usuario
+def get_user_restaurant_view(user):
+    """Obtiene el restaurante asociado al usuario logueado"""
+    if user.is_superuser:
+        return None  # Superuser puede ver todos
+    try:
+        return Restaurante.objects.get(propietario=user)
+    except Restaurante.DoesNotExist:
+        return None
+
+# Vista de gestión de categorías usando los templates existentes
+@login_required
+def manage_categories_view(request):
+    """Vista de gestión de categorías usando template existente"""
+    user_restaurant = get_user_restaurant_view(request.user)
+    
+    if not user_restaurant and not request.user.is_superuser:
+        return redirect('/admin/web/login/')
+    
+    # Filtrar categorías por restaurante
+    if user_restaurant:
+        categorias = Categoria.objects.filter(restaurante=user_restaurant).order_by('orden')
+        restaurant_name = user_restaurant.nombre
+    else:
+        # Superuser ve todas las categorías
+        categorias = Categoria.objects.all().order_by('restaurante__nombre', 'orden')
+        restaurant_name = "Todas las categorías"
+    
+    context = {
+        'categorias': categorias,
+        'user': request.user,
+        'restaurant_name': restaurant_name,
+        'is_superuser': request.user.is_superuser
+    }
+    
+    return render(request, 'admin/categorias.html', context)
+
+# Vista de gestión de comidas
+@login_required  
+def manage_foods_view(request):
+    """Vista de gestión de comidas por categoría"""
+    user_restaurant = get_user_restaurant_view(request.user)
+    
+    if not user_restaurant and not request.user.is_superuser:
+        return redirect('/admin/web/login/')
+    
+    categoria_id = request.GET.get('categoria')
+    
+    # Filtrar por restaurante
+    if user_restaurant:
+        categorias = Categoria.objects.filter(restaurante=user_restaurant).order_by('orden')
+        comidas = Comida.objects.filter(restaurante=user_restaurant)
+        if categoria_id:
+            comidas = comidas.filter(categoria_id=categoria_id)
+    else:
+        categorias = Categoria.objects.all().order_by('restaurante__nombre', 'orden')
+        comidas = Comida.objects.all()
+        if categoria_id:
+            comidas = comidas.filter(categoria_id=categoria_id)
+    
+    context = {
+        'categorias': categorias,
+        'comidas': comidas.order_by('categoria__orden', 'nombre'),
+        'selected_categoria': categoria_id,
+        'user': request.user,
+        'is_superuser': request.user.is_superuser
+    }
+    
+    return render(request, 'admin/comidas.html', context)
+
+# API endpoints para CRUD operations con tenant isolation
+@csrf_exempt
+@login_required
+def api_categories(request):
+    """API para gestión de categorías"""
+    user_restaurant = get_user_restaurant_view(request.user)
+    
+    if not user_restaurant and not request.user.is_superuser:
+        return JsonResponse({'error': 'Sin permisos'}, status=403)
+    
+    if request.method == 'GET':
+        if user_restaurant:
+            categorias = Categoria.objects.filter(restaurante=user_restaurant)
+        else:
+            categorias = Categoria.objects.all()
+            
+        data = [{
+            'id': cat.id,
+            'nombre': cat.nombre,
+            'orden': cat.orden,
+            'imagen_url': cat.imagen.url if cat.imagen else None,
+            'restaurante': cat.restaurante.nombre
+        } for cat in categorias.order_by('orden')]
+        
+        return JsonResponse(data, safe=False)
+    
+    elif request.method == 'POST':
+        import json
+        data = json.loads(request.body)
+        
+        categoria = Categoria.objects.create(
+            nombre=data['nombre'],
+            restaurante=user_restaurant or Restaurante.objects.get(id=data['restaurante_id']),
+            orden=data.get('orden', 1)
+        )
+        
+        return JsonResponse({
+            'id': categoria.id,
+            'nombre': categoria.nombre,
+            'success': True
+        })
 
 # Vista simple para debug
 def debug_view(request):
@@ -578,9 +695,9 @@ def admin_dashboard_view(request):
                                     <a href="${restaurant.carta_virtual_url}" target="_blank" class="action-btn view-carta-btn">
                                         <i class="fas fa-external-link-alt"></i> Ver Carta
                                     </a>
-                                    <button class="action-btn manage-btn" onclick="manageRestaurant('${restaurant.slug}')">
+                                    <a href="/admin/manage/categories/" class="action-btn manage-btn">
                                         <i class="fas fa-cog"></i> Gestionar
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                         `).join('');
@@ -736,6 +853,16 @@ def restaurant_dashboard_view(request):
                 box-shadow: 0 10px 25px rgba(0,0,0,0.1);
                 transition: all 0.3s ease;
                 cursor: pointer;
+                text-decoration: none;
+                color: #333;
+                display: block;
+            }
+            
+            a.action-card,
+            a.action-card:visited,
+            a.action-card:link {
+                color: #333;
+                text-decoration: none;
             }
             
             .action-card:hover {
@@ -819,16 +946,16 @@ def restaurant_dashboard_view(request):
                 <div id="stats-section" class="stats-grid"></div>
                 
                 <div class="actions-grid">
-                    <div class="action-card" onclick="manageCategories()">
+                    <a href="/admin/manage/categories/" class="action-card">
                         <div class="icon"><i class="fas fa-list"></i></div>
                         <h3>Gestionar Categorías</h3>
                         <p>Organiza y edita las categorías de tu menú</p>
-                    </div>
-                    <div class="action-card" onclick="manageComidas()">
+                    </a>
+                    <a href="/admin/manage/foods/" class="action-card">
                         <div class="icon"><i class="fas fa-utensils"></i></div>
                         <h3>Gestionar Comidas</h3>
                         <p>Añade, edita o elimina platos de tu carta</p>
-                    </div>
+                    </a>
                     <div class="action-card" onclick="viewStats()">
                         <div class="icon"><i class="fas fa-chart-bar"></i></div>
                         <h3>Estadísticas</h3>
@@ -971,6 +1098,13 @@ urlpatterns = [
     
     # Dashboard web para restaurante individual
     path('admin/web/restaurant/', restaurant_dashboard_view, name='restaurant_dashboard'),
+    
+    # Vistas de gestión con templates existentes
+    path('admin/manage/categories/', manage_categories_view, name='manage_categories'),
+    path('admin/manage/foods/', manage_foods_view, name='manage_foods'),
+    
+    # API endpoints para gestión
+    path('api/categories/', api_categories, name='api_categories'),
     
     # URLs existentes que sabemos que funcionan
     path('admin/', admin.site.urls),
