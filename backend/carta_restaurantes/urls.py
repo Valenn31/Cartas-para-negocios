@@ -489,6 +489,8 @@ def admin_dashboard_view(request):
             
             async function loadDashboard() {
                 try {
+                    console.log('Admin Dashboard - Token:', token);
+                    
                     const response = await fetch('/api/admin/test/', {
                         headers: {
                             'Authorization': 'Token ' + token
@@ -496,6 +498,8 @@ def admin_dashboard_view(request):
                     });
                     
                     if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Admin Dashboard Error:', errorText);
                         throw new Error('Error al cargar datos');
                     }
                     
@@ -836,17 +840,26 @@ def restaurant_dashboard_view(request):
             
             async function loadDashboard() {
                 try {
+                    console.log('Token:', token);
+                    console.log('Enviando request a /api/admin/test/');
+                    
                     const response = await fetch('/api/admin/test/', {
                         headers: {
                             'Authorization': 'Token ' + token
                         }
                     });
                     
+                    console.log('Response status:', response.status);
+                    console.log('Response ok:', response.ok);
+                    
                     if (!response.ok) {
-                        throw new Error('Error al cargar datos');
+                        const errorText = await response.text();
+                        console.error('Error response:', errorText);
+                        throw new Error('Error al cargar datos: ' + response.status);
                     }
                     
                     const data = await response.json();
+                    console.log('Data recibida:', data);
                     
                     if (data.tipo === 'Super Admin') {
                         // Si es super admin, redirigir al dashboard de admin
