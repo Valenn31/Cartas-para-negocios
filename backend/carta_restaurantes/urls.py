@@ -491,10 +491,8 @@ def admin_dashboard_view(request):
                 try {
                     console.log('Admin Dashboard - Token:', token);
                     
-                    const response = await fetch('/api/admin/', {
-                        headers: {
-                            'Authorization': 'Token ' + token
-                        }
+                    const response = await fetch('/api/admin/test/?token=' + token, {
+                        method: 'GET'
                     });
                     
                     if (!response.ok) {
@@ -843,10 +841,8 @@ def restaurant_dashboard_view(request):
                     console.log('Token:', token);
                     console.log('Enviando request a /api/admin/test/');
                     
-                    const response = await fetch('/api/admin/', {
-                        headers: {
-                            'Authorization': 'Token ' + token
-                        }
+                    const response = await fetch('/api/admin/test/?token=' + token, {
+                        method: 'GET'
                     });
                     
                     console.log('Response status:', response.status);
