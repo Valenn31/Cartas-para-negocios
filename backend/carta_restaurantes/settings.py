@@ -111,3 +111,7 @@ REST_FRAMEWORK = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Configuración de autenticación personalizada
+LOGIN_URL = '/admin/web/login/'
+LOGIN_REDIRECT_URL = '/admin/web/dashboard/'

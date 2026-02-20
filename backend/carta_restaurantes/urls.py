@@ -4,7 +4,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login as auth_login
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -21,9 +20,12 @@ def get_user_restaurant_view(user):
         return None
 
 # Vista de gestión de categorías usando los templates existentes
-@login_required
 def manage_categories_view(request):
     """Vista de gestión de categorías usando template existente"""
+    # Verificar autenticación manualmente
+    if not request.user.is_authenticated:
+        return redirect('/admin/web/login/')
+        
     user_restaurant = get_user_restaurant_view(request.user)
     
     if not user_restaurant and not request.user.is_superuser:
@@ -48,9 +50,12 @@ def manage_categories_view(request):
     return render(request, 'admin/categorias.html', context)
 
 # Vista de gestión de comidas
-@login_required  
 def manage_foods_view(request):
     """Vista de gestión de comidas por categoría"""
+    # Verificar autenticación manualmente
+    if not request.user.is_authenticated:
+        return redirect('/admin/web/login/')
+        
     user_restaurant = get_user_restaurant_view(request.user)
     
     if not user_restaurant and not request.user.is_superuser:
