@@ -8,6 +8,16 @@ from django.contrib.auth import authenticate, login as auth_login
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from .models import Categoria, Subcategoria, Comida, Restaurante
+from functools import wraps
+
+# Decorador personalizado para login
+def custom_login_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('/admin/web/login/')
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 # Helper function para obtener el restaurante del usuario
 def get_user_restaurant_view(user):
@@ -20,12 +30,9 @@ def get_user_restaurant_view(user):
         return None
 
 # Vista de gestión de categorías usando los templates existentes
+@custom_login_required
 def manage_categories_view(request):
     """Vista de gestión de categorías usando template existente"""
-    # Verificar autenticación manualmente
-    if not request.user.is_authenticated:
-        return redirect('/admin/web/login/')
-        
     user_restaurant = get_user_restaurant_view(request.user)
     
     if not user_restaurant and not request.user.is_superuser:
@@ -50,12 +57,9 @@ def manage_categories_view(request):
     return render(request, 'admin/categorias.html', context)
 
 # Vista de gestión de comidas
+@custom_login_required
 def manage_foods_view(request):
     """Vista de gestión de comidas por categoría"""
-    # Verificar autenticación manualmente
-    if not request.user.is_authenticated:
-        return redirect('/admin/web/login/')
-        
     user_restaurant = get_user_restaurant_view(request.user)
     
     if not user_restaurant and not request.user.is_superuser:
@@ -1097,6 +1101,9 @@ def restaurant_dashboard_view(request):
 
 urlpatterns = [
     path('', redirect_to_login),
+    
+    # Redirección desde el login por defecto de Django a nuestro login personalizado
+    path('accounts/login/', lambda request: redirect('/admin/web/login/'), name='fallback_login'),
     
     # Vista de login simple que funciona
     path('admin/web/login/', simple_login_view, name='simple_login'),
