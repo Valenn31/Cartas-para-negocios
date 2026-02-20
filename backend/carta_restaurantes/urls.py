@@ -193,6 +193,8 @@ def simple_login_view(request):
     </body>
     </html>
     '''
+    return HttpResponse(html)
+
 def admin_dashboard_view(request):
     """Dashboard web para super admin con vista de todos los restaurantes"""
     html = '''
