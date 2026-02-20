@@ -481,11 +481,14 @@ def admin_dashboard_view(request):
             
             if (!token) {
                 window.location.href = '/admin/web/login/';
-                return;
+                // No usar return fuera de función
+            } else {
+                // Guardar token en localStorage
+                localStorage.setItem('admin_token', token);
+                
+                // Cargar dashboard al iniciar
+                loadDashboard();
             }
-            
-            // Guardar token en localStorage
-            localStorage.setItem('admin_token', token);
             
             async function loadDashboard() {
                 try {
@@ -608,9 +611,6 @@ def admin_dashboard_view(request):
                 localStorage.removeItem('admin_token');
                 window.location.href = '/admin/web/login/';
             }
-            
-            // Cargar dashboard al iniciar
-            loadDashboard();
         </script>
     </body>
     </html>
@@ -850,11 +850,14 @@ def restaurant_dashboard_view(request):
             
             if (!token) {
                 window.location.href = '/admin/web/login/';
-                return;
+                // No usar return fuera de función
+            } else {
+                // Guardar token en localStorage
+                localStorage.setItem('admin_token', token);
+                
+                // Cargar dashboard al iniciar
+                loadDashboard();
             }
-            
-            // Guardar token en localStorage
-            localStorage.setItem('admin_token', token);
             
             async function loadDashboard() {
                 try {
@@ -951,9 +954,6 @@ def restaurant_dashboard_view(request):
                 localStorage.removeItem('admin_token');
                 window.location.href = '/admin/web/login/';
             }
-            
-            // Cargar dashboard al iniciar
-            loadDashboard();
         </script>
     </body>
     </html>
