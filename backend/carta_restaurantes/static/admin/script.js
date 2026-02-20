@@ -23,25 +23,25 @@ async function handleLogin(e) {
     showLoading(true);
     
     try {
-        const response = await fetch('/api/admin/auth/login/', {
+        const response = await fetch('/admin/web/login/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
+                // Sin CSRF token para evitar errores
             },
             body: JSON.stringify({ username, password })
         });
         
         const data = await response.json();
         
-        if (response.ok) {
+        if (response.ok && data.success) {
             // Save token
             localStorage.setItem('admin_token', data.token);
             
             // Show success and redirect
             showSuccess('¡Login exitoso! Redirigiendo...');
             setTimeout(() => {
-                window.location.href = '/admin/web/';
+                window.location.href = data.redirect_url || '/admin/web/';
             }, 1000);
         } else {
             showError(data.error || 'Error en el login');

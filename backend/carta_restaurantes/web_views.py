@@ -48,7 +48,7 @@ def admin_web_login(request):
             }, status=400)
         except Exception as e:
             return JsonResponse({
-                'error': 'Error interno del servidor'
+                'error': f'Error interno: {str(e)}'
             }, status=500)
     
     return render(request, 'admin/login.html')
