@@ -341,33 +341,85 @@ def test_dashboard(request):
         # Obtener restaurante del usuario
         user_restaurant = get_user_restaurant(user)
         
-        if not user_restaurant:
+        if user_restaurant:
+            # Usuario con restaurante específico
+            categorias = Categoria.objects.filter(restaurante=user_restaurant).count()
+            subcategorias = Subcategoria.objects.filter(restaurante=user_restaurant).count()
+            comidas = Comida.objects.filter(restaurante=user_restaurant).count()
+            
             return Response({
-                'error': 'Usuario no tiene restaurante asignado',
-                'user': user.username
-            }, status=400)
-        
-        # Obtener datos del restaurante
-        categorias = Categoria.objects.filter(restaurante=user_restaurant)
-        comidas = Comida.objects.filter(restaurante=user_restaurant)
-        
-        return Response({
-            'success': True,
-            'message': f'¡Tenant isolation funcionando! 🎉',
-            'user': {
-                'username': user.username,
-                'email': user.email,
-                'is_superuser': user.is_superuser
-            },
-            'restaurant': {
-                'nombre': user_restaurant.nombre,
+                'usuario': user.username,
+                'restaurante': user_restaurant.nombre,
                 'slug': user_restaurant.slug,
-                'descripcion': user_restaurant.descripcion
-            },
-            'stats': {
-                'total_categorias': categorias.count(),
-                'total_comidas': comidas.count()
-            },
+                'estadisticas': {
+                    'categorias': categorias,
+                    'subcategorias': subcategorias,
+                    'comidas': comidas
+                },
+                'mensaje': f'Tenant isolation funcionando! Solo ves datos de {user_restaurant.nombre}.',
+                'urls_disponibles': {
+                    'categorias': '/api/admin/categorias/',
+                    'subcategorias': '/api/admin/subcategorias/',
+                    'comidas': '/api/admin/comidas/'
+                }
+            })
+            
+        elif user.is_superuser:
+            # Superuser ve todos los restaurantes con detalles
+            restaurantes = Restaurante.objects.all()
+            
+            restaurantes_data = []
+            total_categorias = 0
+            total_subcategorias = 0
+            total_comidas = 0
+            
+            for restaurante in restaurantes:
+                categorias_count = Categoria.objects.filter(restaurante=restaurante).count()
+                subcategorias_count = Subcategoria.objects.filter(restaurante=restaurante).count()
+                comidas_count = Comida.objects.filter(restaurante=restaurante).count()
+                
+                total_categorias += categorias_count
+                total_subcategorias += subcategorias_count
+                total_comidas += comidas_count
+                
+                restaurantes_data.append({
+                    'id': restaurante.id,
+                    'nombre': restaurante.nombre,
+                    'slug': restaurante.slug,
+                    'descripcion': restaurante.descripcion,
+                    'propietario': restaurante.propietario.username,
+                    'estadisticas': {
+                        'categorias': categorias_count,
+                        'subcategorias': subcategorias_count,
+                        'comidas': comidas_count
+                    },
+                    'carta_virtual_url': f'https://cartas-para-negocios.vercel.app/?restaurante={restaurante.slug}',
+                    'admin_url': f'/api/admin/restaurantes/{restaurante.id}/'
+                })
+            
+            return Response({
+                'usuario': user.username,
+                'tipo': 'Super Admin',
+                'restaurantes': restaurantes_data,
+                'estadisticas_globales': {
+                    'total_restaurantes': len(restaurantes_data),
+                    'total_categorias': total_categorias,
+                    'total_subcategorias': total_subcategorias,
+                    'total_comidas': total_comidas
+                },
+                'mensaje': 'Dashboard Super Admin - Todos los restaurantes',
+                'urls_disponibles': {
+                    'categorias': '/api/admin/categorias/',
+                    'subcategorias': '/api/admin/subcategorias/',
+                    'comidas': '/api/admin/comidas/'
+                }
+            })
+        else:
+            return Response({
+                'usuario': user.username,
+                'error': 'Usuario sin restaurante asignado',
+                'mensaje': 'Contacta al administrador para asignar un restaurante'
+            }, status=403)
             'categorias': [
                 {
                     'id': cat.id,
