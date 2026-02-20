@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login as django_login
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -251,6 +251,9 @@ def admin_login(request):
         print(f"DEBUG authenticate result: {user}")
         
         if user and user.is_staff:
+            # Iniciar sesión de Django para las vistas que usan sesiones
+            django_login(request, user)
+            
             token, created = Token.objects.get_or_create(user=user)
             return Response({
                 'token': token.key,
