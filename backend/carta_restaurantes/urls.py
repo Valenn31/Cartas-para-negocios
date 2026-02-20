@@ -87,9 +87,12 @@ def manage_foods_view(request):
 
 # API endpoints para CRUD operations con tenant isolation
 @csrf_exempt
-@login_required
 def api_categories(request):
     """API para gestión de categorías"""
+    # Verificar autenticación manualmente
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'No autenticado'}, status=401)
+        
     user_restaurant = get_user_restaurant_view(request.user)
     
     if not user_restaurant and not request.user.is_superuser:
