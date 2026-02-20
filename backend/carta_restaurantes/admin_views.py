@@ -90,19 +90,11 @@ def setup_test_users(request):
 
 # Vista de dashboard de prueba
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def admin_dashboard(request):
     """Dashboard simple para probar multi-tenant"""
     
-    if not request.user.is_authenticated:
-        return Response({
-            'message': 'No autenticado. Haz login primero en /api/admin/auth/login/',
-            'login_url': '/api/admin/auth/login/',
-            'test_users': {
-                'admin': 'password_admin',
-                'restaurante_mario': 'test123'
-            }
-        }, status=401)
-    
+    # El decorador IsAuthenticated ya maneja la autenticación
     user_restaurant = get_user_restaurant(request.user)
     
     if user_restaurant:
