@@ -489,19 +489,31 @@ def admin_dashboard_view(request):
             
             async function loadDashboard() {
                 try {
+                    console.log('Admin Dashboard - Iniciando...');
                     console.log('Admin Dashboard - Token:', token);
                     
-                    const response = await fetch('/api/admin/test/?token=' + token, {
+                    const url = '/api/admin/test/?token=' + token;
+                    console.log('Admin Dashboard - URL:', url);
+                    
+                    const response = await fetch(url, {
                         method: 'GET'
                     });
                     
+                    console.log('Admin Dashboard - Response status:', response.status);
+                    console.log('Admin Dashboard - Response ok:', response.ok);
+                    
                     if (!response.ok) {
                         const errorText = await response.text();
-                        console.error('Admin Dashboard Error:', errorText);
-                        throw new Error('Error al cargar datos');
+                        console.error('Admin Dashboard Error Text:', errorText);
+                        throw new Error('Error al cargar datos: ' + response.status + ' - ' + errorText);
                     }
                     
                     const data = await response.json();
+                    console.log('Admin Dashboard - Data recibida:', data);
+                    
+                    if (!data || typeof data !== 'object') {
+                        throw new Error('Datos inválidos recibidos');
+                    }
                     
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('content').style.display = 'block';
@@ -574,9 +586,17 @@ def admin_dashboard_view(request):
                     }
                     
                 } catch (error) {
+                    console.error('Admin Dashboard - Error completo:', error);
+                    console.error('Admin Dashboard - Error stack:', error.stack);
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('error').style.display = 'block';
-                    document.getElementById('error').textContent = 'Error: ' + error.message;
+                    document.getElementById('error').innerHTML = `
+                        <h3>Error Admin Dashboard:</h3>
+                        <p><strong>Mensaje:</strong> ${error.message}</p>
+                        <p><strong>Token:</strong> ${token ? token.substring(0, 20) + '...' : 'No token'}</p>
+                        <p><strong>URL:</strong> /api/admin/test/?token=...</p>
+                        <p>Revisa la consola (F12) para más detalles.</p>
+                    `;
                 }
             }
             
@@ -838,24 +858,28 @@ def restaurant_dashboard_view(request):
             
             async function loadDashboard() {
                 try {
-                    console.log('Token:', token);
-                    console.log('Enviando request a /api/admin/test/');
+                    console.log('Restaurant Dashboard - Iniciando...');
+                    console.log('Restaurant Dashboard - Token:', token);
+                    console.log('Restaurant Dashboard - Enviando request a /api/admin/test/');
                     
-                    const response = await fetch('/api/admin/test/?token=' + token, {
+                    const url = '/api/admin/test/?token=' + token;
+                    console.log('Restaurant Dashboard - URL completa:', url);
+                    
+                    const response = await fetch(url, {
                         method: 'GET'
                     });
                     
-                    console.log('Response status:', response.status);
-                    console.log('Response ok:', response.ok);
+                    console.log('Restaurant Dashboard - Response status:', response.status);
+                    console.log('Restaurant Dashboard - Response ok:', response.ok);
                     
                     if (!response.ok) {
                         const errorText = await response.text();
-                        console.error('Error response:', errorText);
-                        throw new Error('Error al cargar datos: ' + response.status);
+                        console.error('Restaurant Dashboard Error response:', errorText);
+                        throw new Error('Error al cargar datos: ' + response.status + ' - ' + errorText);
                     }
                     
                     const data = await response.json();
-                    console.log('Data recibida:', data);
+                    console.log('Restaurant Dashboard - Data recibida:', data);
                     
                     if (data.tipo === 'Super Admin') {
                         // Si es super admin, redirigir al dashboard de admin
@@ -893,9 +917,17 @@ def restaurant_dashboard_view(request):
                     }
                     
                 } catch (error) {
+                    console.error('Restaurant Dashboard - Error completo:', error);
+                    console.error('Restaurant Dashboard - Error stack:', error.stack);
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('error').style.display = 'block';
-                    document.getElementById('error').textContent = 'Error: ' + error.message;
+                    document.getElementById('error').innerHTML = `
+                        <h3>Error Restaurant Dashboard:</h3>
+                        <p><strong>Mensaje:</strong> ${error.message}</p>
+                        <p><strong>Token:</strong> ${token ? token.substring(0, 20) + '...' : 'No token'}</p>
+                        <p><strong>URL:</strong> /api/admin/test/?token=...</p>
+                        <p>Revisa la consola (F12) para más detalles.</p>
+                    `;
                 }
             }
             
