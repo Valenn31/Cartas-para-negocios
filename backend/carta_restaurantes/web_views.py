@@ -2,13 +2,17 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from rest_framework.authtoken.models import Token
 from .models import Restaurante, Categoria, Comida
 from .admin_views import get_user_restaurant
 import json
+
+# Debug view para verificar que las URLs funcionen
+def debug_web_view(request):
+    return HttpResponse("Web views están funcionando correctamente!")
 
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
