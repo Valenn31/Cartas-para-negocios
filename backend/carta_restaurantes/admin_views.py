@@ -129,22 +129,49 @@ def admin_dashboard(request):
         })
         
     elif request.user.is_superuser:
-        # Superuser ve todo
-        categorias = Categoria.objects.all().count()
-        subcategorias = Subcategoria.objects.all().count()
-        comidas = Comida.objects.all().count()
-        restaurantes = Restaurante.objects.all().count()
+        # Superuser ve todos los restaurantes con detalles
+        restaurantes = Restaurante.objects.all()
+        
+        restaurantes_data = []
+        total_categorias = 0
+        total_subcategorias = 0
+        total_comidas = 0
+        
+        for restaurante in restaurantes:
+            categorias_count = Categoria.objects.filter(restaurante=restaurante).count()
+            subcategorias_count = Subcategoria.objects.filter(restaurante=restaurante).count()
+            comidas_count = Comida.objects.filter(restaurante=restaurante).count()
+            
+            total_categorias += categorias_count
+            total_subcategorias += subcategorias_count
+            total_comidas += comidas_count
+            
+            restaurantes_data.append({
+                'id': restaurante.id,
+                'nombre': restaurante.nombre,
+                'slug': restaurante.slug,
+                'descripcion': restaurante.descripcion,
+                'propietario': restaurante.propietario.username,
+                'estadisticas': {
+                    'categorias': categorias_count,
+                    'subcategorias': subcategorias_count,
+                    'comidas': comidas_count
+                },
+                'carta_virtual_url': f'https://cartas-para-negocios.vercel.app/?restaurante={restaurante.slug}',
+                'admin_url': f'/api/admin/restaurantes/{restaurante.id}/'
+            })
         
         return Response({
             'usuario': request.user.username,
             'tipo': 'Super Admin',
+            'restaurantes': restaurantes_data,
             'estadisticas_globales': {
-                'restaurantes': restaurantes,
-                'categorias': categorias,
-                'subcategorias': subcategorias,
-                'comidas': comidas
+                'total_restaurantes': len(restaurantes_data),
+                'total_categorias': total_categorias,
+                'total_subcategorias': total_subcategorias,
+                'total_comidas': total_comidas
             },
-            'mensaje': 'Eres super admin! Ves todos los datos de todos los restaurantes.',
+            'mensaje': 'Dashboard Super Admin - Todos los restaurantes',
             'urls_disponibles': {
                 'categorias': '/api/admin/categorias/',
                 'subcategorias': '/api/admin/subcategorias/',
