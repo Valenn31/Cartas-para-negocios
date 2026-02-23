@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor - {{ restaurante.nombre }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            color: #667eea;
+        }
+        
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .item-card {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .item-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        
+        .item-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .item-details {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .item-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .btn-edit {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            background-color: #5568d3;
+        }
+        
+        .btn-delete {
+            background-color: #ff6b6b;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background-color: #ee5a52;
+        }
+        
+        .btn-add {
+            background-color: #51cf66;
+            color: white;
+            padding: 10px 20px;
+            margin-top: 15px;
+            width: auto;
+            display: inline-block;
+        }
+        
+        .btn-add:hover {
+            background-color: #40c057;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-utensils"></i> Editor - {{ restaurante.nombre }}</h1>
+        <p>Gestiona la carta completa de tu restaurante</p>
+    </div>
+    
+    <div class="container">
+        <a href="/admin/web/restaurant/" class="back-link">
+            <i class="fas fa-arrow-left"></i> Volver al Dashboard
+        </a>
+        
+        <!-- Estadísticas -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ categorias|length }}</div>
+                <div class="stat-label">Categorías</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ comidas|length }}</div>
+                <div class="stat-label">Comidas</div>
+            </div>
+        </div>
+        
+        <!-- Categorías -->
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-list"></i> Categorías
+            </div>
+            
+            {% if categorias %}
+                <div class="items-grid">
+                    {% for categoria in categorias %}
+                        <div class="item-card">
+                            <div class="item-name">{{ categoria.nombre }}</div>
+                            <div class="item-details">
+                                Orden: <strong>{{ categoria.orden }}</strong>
+                            </div>
+                            {% if categoria.imagen %}
+                                <div class="item-details">
+                                    <i class="fas fa-image"></i> Tiene imagen
+                                </div>
+                            {% endif %}
+                            <div class="item-actions">
+                                <a href="/admin/carta_restaurantes/categoria/{{ categoria.id }}/change/" class="btn btn-edit">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <form method="POST" action="/admin/carta_restaurantes/categoria/{{ categoria.id }}/delete/" style="flex: 1;">
+                                    {% csrf_token %}
+                                    <button type="button" class="btn btn-delete" onclick="if(confirm('¿Eliminar?')) this.form.submit();">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No hay categorías creadas</p>
+                </div>
+            {% endif %}
+            
+            <a href="/admin/carta_restaurantes/categoria/add/" class="btn btn-add">
+                <i class="fas fa-plus"></i> Nueva Categoría
+            </a>
+        </div>
+        
+        <!-- Comidas -->
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-utensils"></i> Comidas
+            </div>
+            
+            {% if comidas %}
+                <div class="items-grid">
+                    {% for comida in comidas %}
+                        <div class="item-card">
+                            <div class="item-name">{{ comida.nombre }}</div>
+                            <div class="item-details">
+                                Categoría: <strong>{{ comida.categoria.nombre }}</strong>
+                            </div>
+                            <div class="item-price">${{ comida.precio }}</div>
+                            <div class="item-details">
+                                {% if comida.disponible %}
+                                    <i class="fas fa-check-circle" style="color: #51cf66;"></i> Disponible
+                                {% else %}
+                                    <i class="fas fa-times-circle" style="color: #ff6b6b;"></i> No disponible
+                                {% endif %}
+                            </div>
+                            <div class="item-actions">
+                                <a href="/admin/carta_restaurantes/comida/{{ comida.id }}/change/" class="btn btn-edit">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <form method="POST" action="/admin/carta_restaurantes/comida/{{ comida.id }}/delete/" style="flex: 1;">
+                                    {% csrf_token %}
+                                    <button type="button" class="btn btn-delete" onclick="if(confirm('¿Eliminar?')) this.form.submit();">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>No hay comidas creadas</p>
+                </div>
+            {% endif %}
+            
+            <a href="/admin/carta_restaurantes/comida/add/" class="btn btn-add">
+                <i class="fas fa-plus"></i> Nueva Comida
+            </a>
+        </div>
+        
+    </div>
+    
+</body>
+</html>
