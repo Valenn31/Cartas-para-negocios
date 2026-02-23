@@ -1,4 +1,5 @@
 from django.urls import path
+from django.conf import settings
 from . import admin_views
 
 urlpatterns = [
@@ -6,12 +7,6 @@ urlpatterns = [
     path('', admin_views.admin_dashboard, name='admin_dashboard'),
     path('simple/', admin_views.simple_dashboard, name='simple_dashboard'),  # Nueva vista sin auth
     path('test/', admin_views.test_dashboard, name='test_dashboard'),  # Vista con token por URL
-    path('debug-tokens/', admin_views.debug_tokens, name='debug_tokens'),  # Ver tokens existentes
-    path('debug-user/', admin_views.debug_current_user, name='debug_current_user'),  # Ver usuario actual
-    path('debug-real/', admin_views.debug_real_data, name='debug_real_data'),  # Ver contenido REAL de BD
-    
-    # Endpoint temporal para crear usuarios de prueba
-    path('setup-test-users/', admin_views.setup_test_users, name='setup_test_users'),
     
     # Autenticación
     path('auth/login/', admin_views.admin_login, name='admin_login'),
@@ -35,3 +30,11 @@ urlpatterns = [
     path('comidas/<int:pk>/', admin_views.AdminComidaDetail.as_view(), name='admin_comida_detail'),
     path('comidas/orden/', admin_views.update_comida_orden, name='update_comida_orden'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        path('debug-tokens/', admin_views.debug_tokens, name='debug_tokens'),
+        path('debug-user/', admin_views.debug_current_user, name='debug_current_user'),
+        path('debug-real/', admin_views.debug_real_data, name='debug_real_data'),
+        path('setup-test-users/', admin_views.setup_test_users, name='setup_test_users'),
+    ]
