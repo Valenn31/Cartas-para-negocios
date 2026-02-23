@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate, login as django_login
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from .models import Categoria, Subcategoria, Comida, Restaurante
 from .serializers import CategoriaSerializer, SubcategoriaSerializer, ComidaSerializer
 
@@ -499,6 +500,96 @@ def debug_current_user(request):
             'estadisticas_que_ve': stats_info,
             'problema_detectado': 'Estás usando SUPERUSER (admin) en lugar de PROPIETARIO (restaurante_mario)' if user.is_superuser else 'Usuario correcto',
             'solucion': 'Haz logout y login con: usuario=restaurante_mario, password=test123' if user.is_superuser else 'Todo correcto'
+        })
+        
+    except Token.DoesNotExist:
+        return Response({'error': 'Token inválido'}, status=401)
+
+# Vista para debug completo - Ver contenido REAL de la base de datos
+@api_view(['GET'])
+def debug_real_data(request):
+    """Debug completo: muestra EXACTAMENTE qué hay en la BD para cada restaurante"""
+    
+    # Obtener token desde parámetro GET
+    token_key = request.GET.get('token')
+    
+    if not token_key:
+        return Response({
+            'error': 'Se necesita token',
+            'help': 'Agrega ?token=TU_TOKEN a la URL'
+        }, status=400)
+    
+    try:
+        # Buscar el token
+        token = Token.objects.get(key=token_key)
+        user = token.user
+        
+        # Verificar que sea staff
+        if not user.is_staff:
+            return Response({'error': 'Usuario sin permisos de administrador'}, status=403)
+        
+        # Obtener TODOS los restaurantes y su contenido real
+        restaurantes = Restaurante.objects.all()
+        
+        restaurantes_detalle = []
+        for restaurante in restaurantes:
+            # Obtener TODAS las categorías de este restaurante
+            categorias = Categoria.objects.filter(restaurante=restaurante).order_by('orden')
+            categorias_detalle = []
+            
+            for categoria in categorias:
+                # Para cada categoría, obtener sus subcategorías
+                subcategorias = Subcategoria.objects.filter(restaurante=restaurante).order_by('orden')
+                subcategorias_detalle = []
+                
+                for subcategoria in subcategorias:
+                    # Para cada subcategoría, obtener sus comidas
+                    comidas = Comida.objects.filter(restaurante=restaurante, subcategoria=subcategoria).order_by('orden')
+                    comidas_detalle = [{'id': c.id, 'nombre': c.nombre, 'precio': str(c.precio)} for c in comidas]
+                    
+                    subcategorias_detalle.append({
+                        'id': subcategoria.id,
+                        'nombre': subcategoria.nombre,
+                        'orden': subcategoria.orden,
+                        'comidas_count': len(comidas_detalle),
+                        'comidas': comidas_detalle
+                    })
+                
+                categorias_detalle.append({
+                    'id': categoria.id,
+                    'nombre': categoria.nombre,
+                    'orden': categoria.orden,
+                    'imagen': categoria.imagen.url if categoria.imagen else None,
+                    'subcategorias_count': len(subcategorias_detalle),
+                    'subcategorias': subcategorias_detalle
+                })
+            
+            # Contar todo para este restaurante
+            total_categorias = len(categorias_detalle)
+            total_subcategorias = sum(len(cat['subcategorias']) for cat in categorias_detalle)
+            total_comidas = Comida.objects.filter(restaurante=restaurante).count()
+            
+            restaurantes_detalle.append({
+                'id': restaurante.id,
+                'nombre': restaurante.nombre,
+                'slug': restaurante.slug,
+                'propietario': restaurante.propietario.username,
+                'conteos': {
+                    'categorias': total_categorias,
+                    'subcategorias': total_subcategorias,
+                    'comidas': total_comidas
+                },
+                'contenido_completo': {
+                    'categorias': categorias_detalle
+                }
+            })
+        
+        return Response({
+            'usuario_consultando': user.username,
+            'timestamp': timezone.now(),
+            'restaurantes_completos': restaurantes_detalle,
+            'mensaje': 'Contenido COMPLETO y REAL de la base de datos',
+            'nota': 'Compara estos números con lo que ves en el dashboard'
         })
         
     except Token.DoesNotExist:

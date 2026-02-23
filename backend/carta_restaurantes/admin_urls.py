@@ -8,6 +8,7 @@ urlpatterns = [
     path('test/', admin_views.test_dashboard, name='test_dashboard'),  # Vista con token por URL
     path('debug-tokens/', admin_views.debug_tokens, name='debug_tokens'),  # Ver tokens existentes
     path('debug-user/', admin_views.debug_current_user, name='debug_current_user'),  # Ver usuario actual
+    path('debug-real/', admin_views.debug_real_data, name='debug_real_data'),  # Ver contenido REAL de BD
     
     # Endpoint temporal para crear usuarios de prueba
     path('setup-test-users/', admin_views.setup_test_users, name='setup_test_users'),
