@@ -36,6 +36,15 @@ function Admin() {
     }
   }, [token]);
 
+  // Protección: redirigir si no hay autenticación válida
+  useEffect(() => {
+    // Si no hay token, redirigir al login de Railway
+    if (!token) {
+      window.location.href = 'https://cartas-para-negocios-production.up.railway.app/admin/web/login/';
+      return;
+    }
+  }, [token]);
+
   useEffect(() => {
     if (user) {
       loadCurrentData();

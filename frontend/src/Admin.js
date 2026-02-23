@@ -69,6 +69,28 @@ function Admin() {
     if (token) verifyToken();
   }, [token]);
 
+  // Protección: redirigir si no hay autenticación válida
+  useEffect(() => {
+    // Si no hay token, redirigir al login de Railway
+    if (!token) {
+      window.location.href = 'https://cartas-para-negocios-production.up.railway.app/admin/web/login/';
+      return;
+    }
+  }, [token]);
+
+  // Protección adicional: si el token es inválido, redirigir también
+  useEffect(() => {
+    if (token && !user && !loading) {
+      // Token existe pero el usuario no se pudo verificar
+      setTimeout(() => {
+        if (!user) {
+          localStorage.removeItem('admin_token');
+          window.location.href = 'https://cartas-para-negocios-production.up.railway.app/admin/web/login/';
+        }
+      }, 3000); // Dar 3 segundos para que se verifique
+    }
+  }, [token, user, loading]);
+
   useEffect(() => {
     if (user) loadCurrentData();
   }, [user, currentView, selectedCategoria, selectedSubcategoria]);
@@ -136,34 +158,45 @@ function Admin() {
     closeForm();
   };
 
-  // Componente de Login
+  // Si no hay token, mostrar pantalla de redirección
   if (!token) {
     return (
       <div className={styles.loginContainer}>
         <div className={styles.loginBox}>
-          <h1 className={styles.loginTitle}>Administración Victory</h1>
-          <form onSubmit={handleLogin} className={styles.loginForm}>
-            <div className={styles.formGroup}>
-              <label>Usuario:</label>
-              <input
-                type="text"
-                value={loginData.username}
-                onChange={(e) => setLoginData({...loginData, username: e.target.value})}
-                required
-              />
+          <h1 className={styles.loginTitle}>Editor Completo - Acceso Protegido</h1>
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <div style={{ marginBottom: '20px' }}>
+              <i className="fas fa-lock" style={{ fontSize: '48px', color: '#667eea', marginBottom: '20px' }}></i>
             </div>
-            <div className={styles.formGroup}>
-              <label>Contraseña:</label>
-              <input
-                type="password"
-                value={loginData.password}
-                onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                required
-              />
+            <h2>Acceso Restringido</h2>
+            <p>Este editor es exclusivo para usuarios autenticados.</p>
+            <p>Redirigiendo al sistema de login...</p>
+            <div style={{ marginTop: '20px' }}>
+              <div className="spinner" style={{
+                border: '4px solid #f3f3f3',
+                borderTop: '4px solid #667eea', 
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                animation: 'spin 1s linear infinite',
+                margin: '0 auto'
+              }}></div>
             </div>
-            {loginError && <div className={styles.error}>{loginError}</div>}
-            <button type="submit" className={styles.loginButton}>Ingresar</button>
-          </form>
+            <a 
+              href="https://cartas-para-negocios-production.up.railway.app/admin/web/login/"
+              style={{
+                display: 'inline-block',
+                marginTop: '20px',
+                padding: '10px 20px',
+                backgroundColor: '#667eea',
+                color: 'white',
+                textDecoration: 'none',
+                borderRadius: '5px'
+              }}
+            >
+              Ir al Login Manual
+            </a>
+          </div>
         </div>
       </div>
     );
