@@ -255,8 +255,11 @@ def simple_login_view(request):
             <div class="demo-accounts">
                 <h3>Cuentas de Demostración</h3>
                 <div class="demo-buttons">
-                    <button class="demo-btn" onclick="fillDemo('admin', 'admin123')">
-                        <i class="fas fa-crown"></i> Admin Principal
+                    <button class="demo-btn" onclick="fillDemo('superadmin', 'admin123')">
+                        <i class="fas fa-crown"></i> Super Admin (Ve Todos)
+                    </button>
+                    <button class="demo-btn" onclick="fillDemo('admin', '123123')">
+                        <i class="fas fa-utensils"></i> Restaurante Principal  
                     </button>
                     <button class="demo-btn" onclick="fillDemo('restaurante_mario', 'test123')">
                         <i class="fas fa-pizza-slice"></i> Pizzería Mario

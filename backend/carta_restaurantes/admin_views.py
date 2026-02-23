@@ -31,12 +31,21 @@ def setup_test_users(request):
     """Crear usuarios de prueba con credenciales conocidas - SOLO PARA DESARROLLO"""
     
     try:
-        # Crear/actualizar usuario admin
+        # Crear/actualizar super admin (ve TODOS los restaurantes)
+        superadmin_user, created = User.objects.get_or_create(
+            username='superadmin',
+            defaults={'email': 'superadmin@test.com', 'is_staff': True, 'is_superuser': True}
+        )
+        superadmin_user.set_password('admin123')
+        superadmin_user.save()
+        
+        # Crear/actualizar usuario admin (dueño del restaurante principal SOLAMENTE)
         admin_user, created = User.objects.get_or_create(
             username='admin',
-            defaults={'email': 'admin@test.com', 'is_staff': True, 'is_superuser': True}
+            defaults={'email': 'admin@test.com', 'is_staff': True}
         )
-        admin_user.set_password('admin123')
+        admin_user.set_password('123123')  # Nueva contraseña como pediste
+        admin_user.is_superuser = False  # NO es superuser, solo propietario
         admin_user.save()
         
         # Crear/actualizar usuario restaurante test
@@ -52,17 +61,21 @@ def setup_test_users(request):
             slug='restaurante-principal',
             defaults={
                 'nombre': 'Restaurante Principal',
-                'descripcion': 'Restaurante original',
-                'propietario': admin_user
+                'descripcion': 'Restaurante del administrador',
+                'propietario': admin_user  # Usuario admin es propietario
             }
         )
+        # Si ya existía, actualizar propietario
+        if not created:
+            admin_restaurant.propietario = admin_user
+            admin_restaurant.save()
         
         # Crear restaurante para mario
         mario_restaurant, created = Restaurante.objects.get_or_create(
             slug='pizzeria-mario',
             defaults={
                 'nombre': 'Pizzería Mario',
-                'descripcion': 'Restaurante de prueba',
+                'descripción': 'Restaurante de prueba',
                 'propietario': mario_user
             }
         )
@@ -70,18 +83,29 @@ def setup_test_users(request):
         return Response({
             'message': 'Usuarios de prueba creados exitosamente',
             'usuarios': {
+                'superadmin': {
+                    'username': 'superadmin',
+                    'password': 'admin123',
+                    'tipo': 'Super Admin - Ve TODOS los restaurantes',
+                    'funcionalidad': 'Dashboard global, estadísticas combinadas'
+                },
                 'admin': {
                     'username': 'admin',
-                    'password': 'admin123',
-                    'tipo': 'Super Admin',
+                    'password': '123123',
+                    'tipo': 'Propietario - Solo ve SU restaurante',
                     'restaurante': admin_restaurant.nombre
                 },
                 'restaurante_mario': {
                     'username': 'restaurante_mario', 
                     'password': 'test123',
-                    'tipo': 'Dueño de Restaurante',
+                    'tipo': 'Propietario - Solo ve SU restaurante',
                     'restaurante': mario_restaurant.nombre
                 }
+            },
+            'sistema_configurado': {
+                'super_admin': 'superadmin - Ve dashboard global con TODOS los restaurantes',
+                'propietarios': 'admin y restaurante_mario - Solo ven SUS restaurantes específicos',
+                'separacion_completa': 'Cada propietario edita SOLO su menú'
             },
             'next_step': 'Ahora puedes hacer login en /api/admin/auth/login/ con estas credenciales'
         })
