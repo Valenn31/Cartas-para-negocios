@@ -1,7 +1,7 @@
 // Hooks personalizados para el admin
 import { useState, useEffect } from 'react';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://cartas-para-negocios-production.up.railway.app';
 const API_BASE = `${API_BASE_URL}/api/admin`;
 
 // Hook para autenticación
@@ -59,7 +59,7 @@ export const useAuth = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
+    localStorage.removeItem('admin_token');
     setToken(null);
     setUser(null);
   };

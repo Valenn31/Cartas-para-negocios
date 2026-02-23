@@ -5,7 +5,7 @@ import { CategoriasGrid, SubcategoriasGrid, ComidasGrid } from './AdminComponent
 import { CategoriaForm, SubcategoriaForm, ComidaForm } from './AdminForms';
 import { getTitle, getBreadcrumb, getAddButtonText } from './AdminUtils';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://cartas-para-negocios-production.up.railway.app';
 const API_BASE = `${API_BASE_URL}/api/admin`;
 
 function Admin() {

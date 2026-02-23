@@ -6,7 +6,7 @@ function App() {
   const [subcategoriasConComidas, setSubcategoriasConComidas] = useState([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
 
-  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  const API_BASE = process.env.REACT_APP_API_URL || 'https://cartas-para-negocios-production.up.railway.app';
 
   // Eliminar márgenes y padding del body
   useEffect(() => {
