@@ -41,6 +41,56 @@
             padding: 0 20px;
         }
         
+        .panel {
+            display: none;
+        }
+        
+        .panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .breadcrumb .separator {
+            color: #ccc;
+        }
+        
+        .breadcrumb .current {
+            color: #333;
+            font-weight: 600;
+        }
+        
         .section {
             background: white;
             border-radius: 8px;
@@ -71,11 +121,17 @@
             border-radius: 6px;
             padding: 15px;
             transition: all 0.3s ease;
+            cursor: pointer;
         }
         
         .item-card:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .item-card.clickable {
+            cursor: pointer;
         }
         
         .item-name {
@@ -113,6 +169,11 @@
             transition: all 0.3s ease;
             flex: 1;
             text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
         
         .btn-edit {
@@ -139,11 +200,23 @@
             padding: 10px 20px;
             margin-top: 15px;
             width: auto;
-            display: inline-block;
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
         }
         
         .btn-add:hover {
             background-color: #40c057;
+        }
+        
+        .btn-secondary {
+            background-color: #868e96;
+            color: white;
+            padding: 10px 20px;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #748291;
         }
         
         .back-link {
@@ -152,6 +225,7 @@
             color: #667eea;
             text-decoration: none;
             font-size: 14px;
+            cursor: pointer;
         }
         
         .back-link:hover {
@@ -195,6 +269,26 @@
             font-size: 14px;
             opacity: 0.9;
         }
+        
+        .categoria-card-clickable {
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .categoria-card-clickable::after {
+            content: '';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .categoria-card-clickable:hover::after {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -208,112 +302,183 @@
             <i class="fas fa-arrow-left"></i> Volver al Dashboard
         </a>
         
-        <!-- Estadísticas -->
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-number">{{ categorias|length }}</div>
-                <div class="stat-label">Categorías</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ comidas|length }}</div>
-                <div class="stat-label">Comidas</div>
-            </div>
-        </div>
-        
-        <!-- Categorías -->
-        <div class="section">
-            <div class="section-title">
-                <i class="fas fa-list"></i> Categorías
+        <!-- PANEL 1: CATEGORÍAS -->
+        <div id="panel-categorias" class="panel active">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number">{{ categorias|length }}</div>
+                    <div class="stat-label">Categorías</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ comidas|length }}</div>
+                    <div class="stat-label">Comidas</div>
+                </div>
             </div>
             
-            {% if categorias %}
-                <div class="items-grid">
-                    {% for categoria in categorias %}
-                        <div class="item-card">
-                            <div class="item-name">{{ categoria.nombre }}</div>
-                            <div class="item-details">
-                                Orden: <strong>{{ categoria.orden }}</strong>
-                            </div>
-                            {% if categoria.imagen %}
-                                <div class="item-details">
-                                    <i class="fas fa-image"></i> Tiene imagen
+            <div class="section">
+                <div class="section-title">
+                    <i class="fas fa-list"></i> Selecciona una categoría para ver sus comidas
+                </div>
+                
+                {% if categorias %}
+                    <div class="items-grid">
+                        {% for categoria in categorias %}
+                            <div class="item-card categoria-card-clickable" onclick="showCategoria({{ categoria.id }}, '{{ categoria.nombre }}')">
+                                <div class="item-name">
+                                    <i class="fas fa-folder"></i> {{ categoria.nombre }}
                                 </div>
-                            {% endif %}
-                            <div class="item-actions">
-                                <a href="/admin/carta_restaurantes/categoria/{{ categoria.id }}/change/" class="btn btn-edit">
-                                    <i class="fas fa-edit"></i> Editar
-                                </a>
-                                <form method="POST" action="/admin/carta_restaurantes/categoria/{{ categoria.id }}/delete/" style="flex: 1;">
-                                    {% csrf_token %}
-                                    <button type="button" class="btn btn-delete" onclick="if(confirm('¿Eliminar?')) this.form.submit();">
+                                <div class="item-details">
+                                    Orden: <strong>{{ categoria.orden }}</strong>
+                                </div>
+                                {% if categoria.imagen %}
+                                    <div class="item-details">
+                                        <i class="fas fa-image"></i> Tiene imagen
+                                    </div>
+                                {% endif %}
+                                <div class="item-details">
+                                    <i class="fas fa-utensils"></i> 
+                                    <strong id="count-cat-{{ categoria.id }}">
+                                        {% widthratio categoria.comida_set.count 1 1 %}
+                                    </strong> comidas
+                                </div>
+                                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd; display: flex; gap: 8px;">
+                                    <a href="/admin/carta_restaurantes/categoria/{{ categoria.id }}/change/" class="btn btn-edit" onclick="event.stopPropagation()">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </a>
+                                    <form method="POST" action="/admin/carta_restaurantes/categoria/{{ categoria.id }}/delete/" style="flex: 1; display: none;" id="form-delete-{{ categoria.id }}">
+                                        {% csrf_token %}
+                                    </form>
+                                    <button type="button" class="btn btn-delete" onclick="event.stopPropagation(); if(confirm('¿Eliminar esta categoría y sus comidas?')) document.getElementById('form-delete-{{ categoria.id }}').submit();">
                                         <i class="fas fa-trash"></i> Eliminar
                                     </button>
-                                </form>
+                                </div>
                             </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-inbox"></i>
-                    <p>No hay categorías creadas</p>
-                </div>
-            {% endif %}
-            
-            <a href="/admin/carta_restaurantes/categoria/add/" class="btn btn-add">
-                <i class="fas fa-plus"></i> Nueva Categoría
-            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No hay categorías creadas</p>
+                    </div>
+                {% endif %}
+                
+                <a href="/admin/carta_restaurantes/categoria/add/" class="btn btn-add">
+                    <i class="fas fa-plus"></i> Nueva Categoría
+                </a>
+            </div>
         </div>
         
-        <!-- Comidas -->
-        <div class="section">
-            <div class="section-title">
-                <i class="fas fa-utensils"></i> Comidas
+        <!-- PANEL 2: COMIDAS DE UNA CATEGORÍA -->
+        <div id="panel-comidas" class="panel">
+            <div class="breadcrumb">
+                <a onclick="backToCategories()">
+                    <i class="fas fa-list"></i> Categorías
+                </a>
+                <span class="separator">/</span>
+                <span class="current" id="breadcrumb-categoria"></span>
             </div>
             
-            {% if comidas %}
-                <div class="items-grid">
-                    {% for comida in comidas %}
-                        <div class="item-card">
-                            <div class="item-name">{{ comida.nombre }}</div>
-                            <div class="item-details">
-                                Categoría: <strong>{{ comida.categoria.nombre }}</strong>
-                            </div>
-                            <div class="item-price">${{ comida.precio }}</div>
-                            <div class="item-details">
-                                {% if comida.disponible %}
-                                    <i class="fas fa-check-circle" style="color: #51cf66;"></i> Disponible
-                                {% else %}
-                                    <i class="fas fa-times-circle" style="color: #ff6b6b;"></i> No disponible
-                                {% endif %}
-                            </div>
-                            <div class="item-actions">
-                                <a href="/admin/carta_restaurantes/comida/{{ comida.id }}/change/" class="btn btn-edit">
-                                    <i class="fas fa-edit"></i> Editar
-                                </a>
-                                <form method="POST" action="/admin/carta_restaurantes/comida/{{ comida.id }}/delete/" style="flex: 1;">
-                                    {% csrf_token %}
-                                    <button type="button" class="btn btn-delete" onclick="if(confirm('¿Eliminar?')) this.form.submit();">
-                                        <i class="fas fa-trash"></i> Eliminar
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    {% endfor %}
+            <div class="section">
+                <div class="section-title" id="title-comidas">
+                    <i class="fas fa-utensils"></i> Comidas
                 </div>
-            {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-inbox"></i>
-                    <p>No hay comidas creadas</p>
+                
+                <div id="comidas-grid" class="items-grid">
+                    <!-- Se llena dinámicamente con JavaScript -->
                 </div>
-            {% endif %}
-            
-            <a href="/admin/carta_restaurantes/comida/add/" class="btn btn-add">
-                <i class="fas fa-plus"></i> Nueva Comida
-            </a>
+                
+                <a href="/admin/carta_restaurantes/comida/add/" class="btn btn-add" id="btn-nueva-comida">
+                    <i class="fas fa-plus"></i> Nueva Comida en esta Categoría
+                </a>
+            </div>
         </div>
-        
     </div>
+    
+    <script>
+        // Datos de comidas desde Django
+        const comidasData = {
+            {% for comida in comidas %}
+                {{ comida.id }}: {
+                    id: {{ comida.id }},
+                    nombre: "{{ comida.nombre }}",
+                    precio: "{{ comida.precio }}",
+                    disponible: {{ comida.disponible|lower }},
+                    categoria_id: {{ comida.categoria.id }},
+                    categoria_nombre: "{{ comida.categoria.nombre }}"
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        };
+        
+        const categoriasData = {
+            {% for categoria in categorias %}
+                {{ categoria.id }}: "{{ categoria.nombre }}"{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        };
+        
+        function showCategoria(categoriaId, categoriaNombre) {
+            // Cambiar panel
+            document.getElementById('panel-categorias').classList.remove('active');
+            document.getElementById('panel-comidas').classList.add('active');
+            
+            // Actualizar breadcrumb
+            document.getElementById('breadcrumb-categoria').textContent = categoriaNombre;
+            
+            // Filtrar comidas de esta categoría
+            const comidasCategoria = Object.values(comidasData).filter(c => c.categoria_id === categoriaId);
+            
+            // Renderizar comidas
+            const grid = document.getElementById('comidas-grid');
+            const titulo = document.getElementById('title-comidas');
+            
+            if (comidasCategoria.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1;">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>No hay comidas en esta categoría</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                grid.innerHTML = comidasCategoria.map(comida => `
+                    <div class="item-card">
+                        <div class="item-name">{{ comida.nombre }}</div>
+                        <div class="item-details">
+                            Categoría: <strong>${comida.categoria_nombre}</strong>
+                        </div>
+                        <div class="item-price">$${comida.precio}</div>
+                        <div class="item-details">
+                            ${comida.disponible 
+                                ? '<i class="fas fa-check-circle" style="color: #51cf66;"></i> Disponible' 
+                                : '<i class="fas fa-times-circle" style="color: #ff6b6b;"></i> No disponible'}
+                        </div>
+                        <div class="item-actions">
+                            <a href="/admin/carta_restaurantes/comida/${comida.id}/change/" class="btn btn-edit">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <form method="POST" action="/admin/carta_restaurantes/comida/${comida.id}/delete/" style="flex: 1; display: none;" id="form-comida-${comida.id}">
+                                {% csrf_token %}
+                            </form>
+                            <button type="button" class="btn btn-delete" onclick="if(confirm('¿Eliminar esta comida?')) document.getElementById('form-comida-${comida.id}').submit();">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            titulo.textContent = `${categoriaNombre} - ${comidasCategoria.length} comidas`;
+            
+            // Actualizar URL de "Nueva Comida"
+            document.getElementById('btn-nueva-comida').href = 
+                `/admin/carta_restaurantes/comida/add/?categoria=${categoriaId}`;
+        }
+        
+        function backToCategories() {
+            document.getElementById('panel-comidas').classList.remove('active');
+            document.getElementById('panel-categorias').classList.add('active');
+        }
+    </script>
     
 </body>
 </html>
