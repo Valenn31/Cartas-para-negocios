@@ -302,6 +302,9 @@ def simple_login_view(request):
                     
                     if (response.ok) {
                         showAlert('¡Login exitoso! Redirigiendo...', 'success');
+
+                        // Asegurar que siempre se use el token recién obtenido
+                        localStorage.setItem('admin_token', data.token);
                         
                         // Determinar dashboard por rol real
                         let dashboardUrl;

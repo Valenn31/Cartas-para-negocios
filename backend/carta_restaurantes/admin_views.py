@@ -305,6 +305,13 @@ def admin_login(request):
         print(f"DEBUG authenticate result: {user}")
         
         if user and user.is_staff:
+            # Auto-reparación en desarrollo: admin siempre debe ser propietario,
+            # no superuser, para que entre al dashboard de su restaurante.
+            if user.username == 'admin' and user.is_superuser:
+                user.is_superuser = False
+                user.is_staff = True
+                user.save(update_fields=['is_superuser', 'is_staff'])
+
             # Iniciar sesión de Django para las vistas que usan sesiones
             django_login(request, user)
             

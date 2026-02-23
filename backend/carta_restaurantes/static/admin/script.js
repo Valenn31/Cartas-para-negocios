@@ -35,6 +35,8 @@ async function handleLogin(e) {
         const data = await response.json();
         
         if (response.ok && data.token) {
+            // Limpiar token previo y guardar el token recién emitido
+            localStorage.removeItem('admin_token');
             // Save token
             localStorage.setItem('admin_token', data.token);
             
