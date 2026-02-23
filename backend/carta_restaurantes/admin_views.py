@@ -101,7 +101,11 @@ def admin_dashboard(request):
     if user_restaurant:
         # Usuario con restaurante
         categorias = Categoria.objects.filter(restaurante=user_restaurant).count()
-        subcategorias = Subcategoria.objects.filter(restaurante=user_restaurant).count()
+        
+        # CORREGIDO: Subcategorías que pertenecen a categorías del restaurante
+        categorias_del_restaurante = Categoria.objects.filter(restaurante=user_restaurant)
+        subcategorias = Subcategoria.objects.filter(categoria__in=categorias_del_restaurante).count()
+        
         comidas = Comida.objects.filter(restaurante=user_restaurant).count()
         
         return Response({
@@ -132,7 +136,11 @@ def admin_dashboard(request):
         
         for restaurante in restaurantes:
             categorias_count = Categoria.objects.filter(restaurante=restaurante).count()
-            subcategorias_count = Subcategoria.objects.filter(restaurante=restaurante).count()
+            
+            # CORREGIDO: Subcategorías que pertenecen a categorías del restaurante
+            categorias_del_restaurante = Categoria.objects.filter(restaurante=restaurante)
+            subcategorias_count = Subcategoria.objects.filter(categoria__in=categorias_del_restaurante).count()
+            
             comidas_count = Comida.objects.filter(restaurante=restaurante).count()
             
             total_categorias += categorias_count
@@ -348,7 +356,11 @@ def test_dashboard(request):
         if user_restaurant:
             # Usuario con restaurante específico
             categorias = Categoria.objects.filter(restaurante=user_restaurant).count()
-            subcategorias = Subcategoria.objects.filter(restaurante=user_restaurant).count()
+            
+            # CORREGIDO: Subcategorías que pertenecen a categorías del restaurante
+            categorias_del_restaurante = Categoria.objects.filter(restaurante=user_restaurant)
+            subcategorias = Subcategoria.objects.filter(categoria__in=categorias_del_restaurante).count()
+            
             comidas = Comida.objects.filter(restaurante=user_restaurant).count()
             
             return Response({
@@ -379,7 +391,11 @@ def test_dashboard(request):
             
             for restaurante in restaurantes:
                 categorias_count = Categoria.objects.filter(restaurante=restaurante).count()
-                subcategorias_count = Subcategoria.objects.filter(restaurante=restaurante).count()
+                
+                # CORREGIDO: Subcategorías que pertenecen a categorías del restaurante
+                categorias_del_restaurante = Categoria.objects.filter(restaurante=restaurante)
+                subcategorias_count = Subcategoria.objects.filter(categoria__in=categorias_del_restaurante).count()
+                
                 comidas_count = Comida.objects.filter(restaurante=restaurante).count()
                 
                 total_categorias += categorias_count
@@ -538,8 +554,8 @@ def debug_real_data(request):
             categorias_detalle = []
             
             for categoria in categorias:
-                # Para cada categoría, obtener sus subcategorías
-                subcategorias = Subcategoria.objects.filter(restaurante=restaurante).order_by('orden')
+                # Para cada categoría, obtener SUS subcategorías específicas
+                subcategorias = Subcategoria.objects.filter(categoria=categoria).order_by('orden')
                 subcategorias_detalle = []
                 
                 for subcategoria in subcategorias:
