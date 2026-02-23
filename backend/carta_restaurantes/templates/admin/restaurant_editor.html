@@ -289,6 +289,172 @@
         .categoria-card-clickable:hover::after {
             opacity: 1;
         }
+        
+        .categoria-card-bg {
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: overlay;
+            position: relative;
+        }
+        
+        .categoria-card-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            z-index: 1;
+        }
+        
+        .categoria-card-overlay {
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Modal de edición */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .modal-header h2 {
+            color: #667eea;
+            font-size: 22px;
+            margin: 0;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-modal:hover {
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin: 0;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .modal-footer .btn {
+            flex: 1;
+        }
+        
+        .btn-cancel {
+            background-color: #868e96;
+            color: white;
+        }
+        
+        .btn-cancel:hover {
+            background-color: #748291;
+        }
+        
+        .btn-save {
+            background-color: #51cf66;
+            color: white;
+        }
+        
+        .btn-save:hover {
+            background-color: #40c057;
+        }
     </style>
 </head>
 <body>
@@ -323,34 +489,38 @@
                 {% if categorias %}
                     <div class="items-grid">
                         {% for categoria in categorias %}
-                            <div class="item-card categoria-card-clickable" onclick="showCategoria({{ categoria.id }}, '{{ categoria.nombre }}')">
-                                <div class="item-name">
-                                    <i class="fas fa-folder"></i> {{ categoria.nombre }}
-                                </div>
-                                <div class="item-details">
-                                    Orden: <strong>{{ categoria.orden }}</strong>
-                                </div>
-                                {% if categoria.imagen %}
-                                    <div class="item-details">
-                                        <i class="fas fa-image"></i> Tiene imagen
+                            <div class="item-card categoria-card-clickable categoria-card-bg" 
+                                 {% if categoria.imagen %}style="background-image: url('{{ categoria.imagen.url }}')"{% endif %}
+                                 onclick="showCategoria({{ categoria.id }}, '{{ categoria.nombre }}')">
+                                <div class="categoria-card-overlay">
+                                    <div class="item-name">
+                                        <i class="fas fa-folder"></i> {{ categoria.nombre }}
                                     </div>
-                                {% endif %}
-                                <div class="item-details">
-                                    <i class="fas fa-utensils"></i> 
-                                    <strong id="count-cat-{{ categoria.id }}">
-                                        {% widthratio categoria.comida_set.count 1 1 %}
-                                    </strong> comidas
-                                </div>
-                                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd; display: flex; gap: 8px;">
-                                    <a href="/admin/carta_restaurantes/categoria/{{ categoria.id }}/change/" class="btn btn-edit" onclick="event.stopPropagation()">
-                                        <i class="fas fa-edit"></i> Editar
-                                    </a>
-                                    <form method="POST" action="/admin/carta_restaurantes/categoria/{{ categoria.id }}/delete/" style="flex: 1; display: none;" id="form-delete-{{ categoria.id }}">
-                                        {% csrf_token %}
-                                    </form>
-                                    <button type="button" class="btn btn-delete" onclick="event.stopPropagation(); if(confirm('¿Eliminar esta categoría y sus comidas?')) document.getElementById('form-delete-{{ categoria.id }}').submit();">
-                                        <i class="fas fa-trash"></i> Eliminar
-                                    </button>
+                                    <div class="item-details">
+                                        Orden: <strong>{{ categoria.orden }}</strong>
+                                    </div>
+                                    {% if categoria.imagen %}
+                                        <div class="item-details">
+                                            <i class="fas fa-image"></i> Tiene imagen
+                                        </div>
+                                    {% endif %}
+                                    <div class="item-details">
+                                        <i class="fas fa-utensils"></i> 
+                                        <strong id="count-cat-{{ categoria.id }}">
+                                            {% widthratio categoria.comida_set.count 1 1 %}
+                                        </strong> comidas
+                                    </div>
+                                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.3); display: flex; gap: 8px;">
+                                        <button type="button" class="btn btn-edit" onclick="event.stopPropagation(); openEditCategoria({{ categoria.id }}, '{{ categoria.nombre }}')">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <form method="POST" action="/admin/carta_restaurantes/categoria/{{ categoria.id }}/delete/" style="flex: 1; display: none;" id="form-delete-{{ categoria.id }}">
+                                            {% csrf_token %}
+                                        </form>
+                                        <button type="button" class="btn btn-delete" onclick="event.stopPropagation(); if(confirm('¿Eliminar esta categoría y sus comidas?')) document.getElementById('form-delete-{{ categoria.id }}').submit();">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         {% endfor %}
@@ -394,6 +564,77 @@
         </div>
     </div>
     
+    <!-- MODAL: Editar Categoría -->
+    <div id="modal-editar-categoria" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Categoría</h2>
+                <button type="button" class="close-modal" onclick="closeModal('modal-editar-categoria')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-editar-categoria" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Nombre de la Categoría</label>
+                    <input type="text" id="input-categoria-nombre" name="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Orden</label>
+                    <input type="number" id="input-categoria-orden" name="orden" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('modal-editar-categoria')">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-save">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- MODAL: Editar Comida -->
+    <div id="modal-editar-comida" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Comida</h2>
+                <button type="button" class="close-modal" onclick="closeModal('modal-editar-comida')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="form-editar-comida" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Nombre de la Comida</label>
+                    <input type="text" id="input-comida-nombre" name="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="input-comida-descripcion" name="descripcion"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Precio ($)</label>
+                    <input type="number" id="input-comida-precio" name="precio" step="0.01" required>
+                </div>
+                <div class="form-group form-checkbox">
+                    <input type="checkbox" id="input-comida-disponible" name="disponible">
+                    <label for="input-comida-disponible">Disponible</label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('modal-editar-comida')">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-save">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </div>
+    
     <script>
         // Datos de comidas desde Django
         const comidasData = {
@@ -401,6 +642,7 @@
                 {{ comida.id }}: {
                     id: {{ comida.id }},
                     nombre: "{{ comida.nombre }}",
+                    descripcion: "{{ comida.descripcion|escapejs }}",
                     precio: "{{ comida.precio }}",
                     disponible: {{ comida.disponible|lower }},
                     categoria_id: {{ comida.categoria.id }},
@@ -411,11 +653,21 @@
         
         const categoriasData = {
             {% for categoria in categorias %}
-                {{ categoria.id }}: "{{ categoria.nombre }}"{% if not forloop.last %},{% endif %}
+                {{ categoria.id }}: {
+                    id: {{ categoria.id }},
+                    nombre: "{{ categoria.nombre }}",
+                    orden: {{ categoria.orden }},
+                    imagen: "{{ categoria.imagen.url|default:'' }}"
+                }{% if not forloop.last %},{% endif %}
             {% endfor %}
         };
         
+        let currentCategoriaId = null;
+        let currentComidaId = null;
+        
         function showCategoria(categoriaId, categoriaNombre) {
+            currentCategoriaId = categoriaId;
+            
             // Cambiar panel
             document.getElementById('panel-categorias').classList.remove('active');
             document.getElementById('panel-comidas').classList.add('active');
@@ -443,6 +695,9 @@
                 grid.innerHTML = comidasCategoria.map(comida => `
                     <div class="item-card">
                         <div class="item-name">{{ comida.nombre }}</div>
+                        <div class="item-details" style="color: #667eea; font-weight: 600;">
+                            ${comida.nombre}
+                        </div>
                         <div class="item-details">
                             Categoría: <strong>${comida.categoria_nombre}</strong>
                         </div>
@@ -453,13 +708,10 @@
                                 : '<i class="fas fa-times-circle" style="color: #ff6b6b;"></i> No disponible'}
                         </div>
                         <div class="item-actions">
-                            <a href="/admin/carta_restaurantes/comida/${comida.id}/change/" class="btn btn-edit">
+                            <button type="button" class="btn btn-edit" onclick="openEditComida(${comida.id})">
                                 <i class="fas fa-edit"></i> Editar
-                            </a>
-                            <form method="POST" action="/admin/carta_restaurantes/comida/${comida.id}/delete/" style="flex: 1; display: none;" id="form-comida-${comida.id}">
-                                {% csrf_token %}
-                            </form>
-                            <button type="button" class="btn btn-delete" onclick="if(confirm('¿Eliminar esta comida?')) document.getElementById('form-comida-${comida.id}').submit();">
+                            </button>
+                            <button type="button" class="btn btn-delete" onclick="deleteComida(${comida.id}, '${comida.nombre.replace(/'/g, "\\'")}')">
                                 <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </div>
@@ -468,15 +720,169 @@
             }
             
             titulo.textContent = `${categoriaNombre} - ${comidasCategoria.length} comidas`;
-            
-            // Actualizar URL de "Nueva Comida"
-            document.getElementById('btn-nueva-comida').href = 
-                `/admin/carta_restaurantes/comida/add/?categoria=${categoriaId}`;
         }
         
         function backToCategories() {
+            currentCategoriaId = null;
+            currentComidaId = null;
             document.getElementById('panel-comidas').classList.remove('active');
             document.getElementById('panel-categorias').classList.add('active');
+        }
+        
+        function openEditCategoria(categoriaId) {
+            const categoria = categoriasData[categoriaId];
+            if (!categoria) return;
+            
+            currentCategoriaId = categoriaId;
+            document.getElementById('input-categoria-nombre').value = categoria.nombre;
+            document.getElementById('input-categoria-orden').value = categoria.orden;
+            
+            const form = document.getElementById('form-editar-categoria');
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                guardarCategoria(categoriaId);
+            };
+            
+            openModal('modal-editar-categoria');
+        }
+        
+        function openEditComida(comidaId) {
+            const comida = comidasData[comidaId];
+            if (!comida) return;
+            
+            currentComidaId = comidaId;
+            document.getElementById('input-comida-nombre').value = comida.nombre;
+            document.getElementById('input-comida-descripcion').value = comida.descripcion;
+            document.getElementById('input-comida-precio').value = comida.precio;
+            document.getElementById('input-comida-disponible').checked = comida.disponible;
+            
+            const form = document.getElementById('form-editar-comida');
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                guardarComida(comidaId);
+            };
+            
+            openModal('modal-editar-comida');
+        }
+        
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        
+        function guardarCategoria(categoriaId) {
+            const nombre = document.getElementById('input-categoria-nombre').value;
+            const orden = document.getElementById('input-categoria-orden').value;
+            
+            fetch(`/admin/categoria/update/${categoriaId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    nombre: nombre,
+                    orden: orden
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Categoría actualizada exitosamente');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'No se pudo guardar'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar la categoría');
+            });
+        }
+        
+        function guardarComida(comidaId) {
+            const nombre = document.getElementById('input-comida-nombre').value;
+            const descripcion = document.getElementById('input-comida-descripcion').value;
+            const precio = document.getElementById('input-comida-precio').value;
+            const disponible = document.getElementById('input-comida-disponible').checked;
+            
+            fetch(`/admin/comida/update/${comidaId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    nombre: nombre,
+                    descripcion: descripcion,
+                    precio: precio,
+                    disponible: disponible
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Comida actualizada exitosamente');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'No se pudo guardar'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al guardar la comida');
+            });
+        }
+        
+        function deleteComida(comidaId, comidaNombre) {
+            if (confirm(`¿Eliminar la comida "${comidaNombre}"?`)) {
+                fetch(`/admin/comida/delete/${comidaId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Comida eliminada exitosamente');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'No se pudo eliminar'));
+                    }
+                });
+            }
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Cerrar modal al clickear fuera
+        window.onclick = function(event) {
+            const modalCategoria = document.getElementById('modal-editar-categoria');
+            const modalComida = document.getElementById('modal-editar-comida');
+            
+            if (event.target === modalCategoria) {
+                closeModal('modal-editar-categoria');
+            }
+            if (event.target === modalComida) {
+                closeModal('modal-editar-comida');
+            }
         }
     </script>
     

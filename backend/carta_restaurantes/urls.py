@@ -2,12 +2,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
 from .models import Categoria, Subcategoria, Comida, Restaurante
 from functools import wraps
+import json
 
 # Decorador personalizado para login
 def custom_login_required(view_func):
@@ -984,6 +984,95 @@ def restaurant_dashboard_view(request):
     '''
     return HttpResponse(html)
 
+@custom_login_required
+@csrf_exempt
+def update_categoria(request, categoria_id):
+    """API para actualizar una categoría"""
+    try:
+        categoria = Categoria.objects.get(id=categoria_id)
+        user_restaurant = get_user_restaurant_view(request.user)
+        
+        # Verificar permisos
+        if not request.user.is_superuser and user_restaurant != categoria.restaurante:
+            return JsonResponse({'success': False, 'error': 'No tienes permiso'}, status=403)
+        
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            categoria.nombre = data.get('nombre', categoria.nombre)
+            categoria.orden = data.get('orden', categoria.orden)
+            categoria.save()
+            return JsonResponse({'success': True, 'message': 'Categoría actualizada'})
+    except Categoria.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Categoría no encontrada'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+@custom_login_required
+@csrf_exempt
+def delete_categoria(request, categoria_id):
+    """API para eliminar una categoría"""
+    try:
+        categoria = Categoria.objects.get(id=categoria_id)
+        user_restaurant = get_user_restaurant_view(request.user)
+        
+        # Verificar permisos
+        if not request.user.is_superuser and user_restaurant != categoria.restaurante:
+            return JsonResponse({'success': False, 'error': 'No tienes permiso'}, status=403)
+        
+        if request.method == 'POST':
+            categoria.delete()
+            return JsonResponse({'success': True, 'message': 'Categoría eliminada'})
+    except Categoria.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Categoría no encontrada'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+@custom_login_required
+@csrf_exempt
+def update_comida(request, comida_id):
+    """API para actualizar una comida"""
+    try:
+        comida = Comida.objects.get(id=comida_id)
+        user_restaurant = get_user_restaurant_view(request.user)
+        
+        # Verificar permisos
+        if not request.user.is_superuser and user_restaurant != comida.categoria.restaurante:
+            return JsonResponse({'success': False, 'error': 'No tienes permiso'}, status=403)
+        
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            comida.nombre = data.get('nombre', comida.nombre)
+            comida.descripcion = data.get('descripcion', comida.descripcion)
+            comida.precio = data.get('precio', comida.precio)
+            comida.disponible = data.get('disponible', comida.disponible)
+            comida.save()
+            return JsonResponse({'success': True, 'message': 'Comida actualizada'})
+    except Comida.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Comida no encontrada'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+@custom_login_required
+@csrf_exempt
+def delete_comida(request, comida_id):
+    """API para eliminar una comida"""
+    try:
+        comida = Comida.objects.get(id=comida_id)
+        user_restaurant = get_user_restaurant_view(request.user)
+        
+        # Verificar permisos
+        if not request.user.is_superuser and user_restaurant != comida.categoria.restaurante:
+            return JsonResponse({'success': False, 'error': 'No tienes permiso'}, status=403)
+        
+        if request.method == 'POST':
+            comida.delete()
+            return JsonResponse({'success': True, 'message': 'Comida eliminada'})
+    except Comida.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Comida no encontrada'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
 urlpatterns = [
     path('', redirect_to_login),
     
@@ -1005,6 +1094,12 @@ urlpatterns = [
     # Vistas de gestión con templates existentes
     path('admin/manage/categories/', manage_categories_view, name='manage_categories'),
     path('admin/manage/foods/', manage_foods_view, name='manage_foods'),
+    
+    # API endpoints para edición inline
+    path('admin/categoria/update/<int:categoria_id>/', update_categoria, name='update_categoria'),
+    path('admin/categoria/delete/<int:categoria_id>/', delete_categoria, name='delete_categoria'),
+    path('admin/comida/update/<int:comida_id>/', update_comida, name='update_comida'),
+    path('admin/comida/delete/<int:comida_id>/', delete_comida, name='delete_comida'),
     
     # API endpoints para gestión
     path('api/categories/', api_categories, name='api_categories'),
