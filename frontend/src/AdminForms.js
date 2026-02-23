@@ -6,7 +6,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://cartas-para-negoc
 const API_BASE = `${API_BASE_URL}/api/admin`;
 
 // Formulario para Categorías
-export const CategoriaForm = ({ item, token, onClose, onSave }) => {
+export const CategoriaForm = ({ item, token, restaurant_slug, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     nombre: item?.nombre || '',
     orden: item?.orden || 0
@@ -24,9 +24,10 @@ export const CategoriaForm = ({ item, token, onClose, onSave }) => {
     }
 
     try {
-      const url = item 
+      let url = item 
         ? `${API_BASE}/categorias/${item.id}/`
         : `${API_BASE}/categorias/`;
+      if (restaurant_slug) url += `?restaurante=${restaurant_slug}`;
       
       const response = await fetch(url, {
         method: item ? 'PUT' : 'POST',
@@ -84,7 +85,7 @@ export const CategoriaForm = ({ item, token, onClose, onSave }) => {
 };
 
 // Formulario para Subcategorías
-export const SubcategoriaForm = ({ item, categoria, token, onClose, onSave }) => {
+export const SubcategoriaForm = ({ item, categoria, token, restaurant_slug, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     nombre: item?.nombre || '',
     orden: item?.orden || 0,
@@ -95,9 +96,10 @@ export const SubcategoriaForm = ({ item, categoria, token, onClose, onSave }) =>
     e.preventDefault();
     
     try {
-      const url = item 
+      let url = item 
         ? `${API_BASE}/subcategorias/${item.id}/`
         : `${API_BASE}/subcategorias/`;
+      if (restaurant_slug) url += `?restaurante=${restaurant_slug}`;
       
       const response = await fetch(url, {
         method: item ? 'PUT' : 'POST',
@@ -150,7 +152,7 @@ export const SubcategoriaForm = ({ item, categoria, token, onClose, onSave }) =>
 };
 
 // Formulario para Comidas
-export const ComidaForm = ({ item, categoria, subcategoria, token, onClose, onSave }) => {
+export const ComidaForm = ({ item, categoria, subcategoria, token, restaurant_slug, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     nombre: item?.nombre || '',
     descripcion: item?.descripcion || '',
@@ -164,9 +166,10 @@ export const ComidaForm = ({ item, categoria, subcategoria, token, onClose, onSa
     e.preventDefault();
     
     try {
-      const url = item 
+      let url = item 
         ? `${API_BASE}/comidas/${item.id}/`
         : `${API_BASE}/comidas/`;
+      if (restaurant_slug) url += `?restaurante=${restaurant_slug}`;
       
       const response = await fetch(url, {
         method: item ? 'PUT' : 'POST',

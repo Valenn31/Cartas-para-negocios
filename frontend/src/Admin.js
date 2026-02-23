@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import styles from './Admin.module.css';
 import { useAuth, useAdminData, useDragDrop } from './AdminHooks';
 import { CategoriasGrid, SubcategoriasGrid, ComidasGrid } from './AdminComponents';
@@ -9,6 +10,9 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://cartas-para-negoc
 const API_BASE = `${API_BASE_URL}/api/admin`;
 
 function Admin() {
+  // Obtener el slug del restaurante de los parámetros de la URL
+  const { restaurant_slug } = useParams();
+  
   // Estados de navegación
   const [currentView, setCurrentView] = useState('categorias');
   const [selectedCategoria, setSelectedCategoria] = useState(null);
@@ -42,27 +46,30 @@ function Admin() {
     loading,
     loadCurrentData,
     deleteItem
-  } = useAdminData(token, currentView, selectedCategoria, selectedSubcategoria);
+  } = useAdminData(token, currentView, selectedCategoria, selectedSubcategoria, restaurant_slug);
 
   // Hooks de drag & drop para cada tipo
   const categoriasDrag = useDragDrop(
     token, 
     categorias, 
     setCategorias, 
-    `${API_BASE}/categorias/orden/`
+    `${API_BASE}/categorias/orden/`,
+    restaurant_slug
   );
 
   const subcategoriasDrag = useDragDrop(
     token, 
     subcategorias, 
     setSubcategorias, 
-    `${API_BASE}/subcategorias/orden/`
+    `${API_BASE}/subcategorias/orden/`,
+    restaurant_slug
   );
   const comidasDrag = useDragDrop(
     token, 
     comidas, 
     setComidas, 
-    `${API_BASE}/comidas/orden/`
+    `${API_BASE}/comidas/orden/`,
+    restaurant_slug
   );
   // Effects
   useEffect(() => {
@@ -274,6 +281,7 @@ function Admin() {
         <CategoriaForm
           item={editingItem}
           token={token}
+          restaurant_slug={restaurant_slug}
           onClose={closeForm}
           onSave={handleFormSave}
         />
@@ -284,6 +292,7 @@ function Admin() {
           item={editingItem}
           categoria={selectedCategoria}
           token={token}
+          restaurant_slug={restaurant_slug}
           onClose={closeForm}
           onSave={handleFormSave}
         />
@@ -295,6 +304,7 @@ function Admin() {
           categoria={selectedCategoria}
           subcategoria={selectedSubcategoria}
           token={token}
+          restaurant_slug={restaurant_slug}
           onClose={closeForm}
           onSave={handleFormSave}
         />

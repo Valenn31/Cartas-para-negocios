@@ -77,7 +77,7 @@ export const useAuth = () => {
 };
 
 // Hook para datos
-export const useAdminData = (token, currentView, selectedCategoria, selectedSubcategoria) => {
+export const useAdminData = (token, currentView, selectedCategoria, selectedSubcategoria, restaurant_slug) => {
   const [categorias, setCategorias] = useState([]);
   const [subcategorias, setSubcategorias] = useState([]);
   const [comidas, setComidas] = useState([]);
@@ -85,7 +85,10 @@ export const useAdminData = (token, currentView, selectedCategoria, selectedSubc
 
   const loadCategorias = async () => {
     try {
-      const response = await fetch(`${API_BASE}/categorias/`, {
+      const url = new URL(`${API_BASE}/categorias/`);
+      if (restaurant_slug) url.searchParams.append('restaurante', restaurant_slug);
+      
+      const response = await fetch(url.toString(), {
         headers: { 'Authorization': `Token ${token}` }
       });
       if (response.ok) {
@@ -99,7 +102,10 @@ export const useAdminData = (token, currentView, selectedCategoria, selectedSubc
 
   const loadSubcategoriasByCategoria = async (categoriaId) => {
     try {
-      const response = await fetch(`${API_BASE}/categorias/${categoriaId}/subcategorias/`, {
+      const url = new URL(`${API_BASE}/categorias/${categoriaId}/subcategorias/`);
+      if (restaurant_slug) url.searchParams.append('restaurante', restaurant_slug);
+      
+      const response = await fetch(url.toString(), {
         headers: { 'Authorization': `Token ${token}` }
       });
       if (response.ok) {
@@ -113,7 +119,10 @@ export const useAdminData = (token, currentView, selectedCategoria, selectedSubc
 
   const loadComidasBySubcategoria = async (subcategoriaId) => {
     try {
-      const response = await fetch(`${API_BASE}/subcategorias/${subcategoriaId}/comidas/`, {
+      const url = new URL(`${API_BASE}/subcategorias/${subcategoriaId}/comidas/`);
+      if (restaurant_slug) url.searchParams.append('restaurante', restaurant_slug);
+      
+      const response = await fetch(url.toString(), {
         headers: { 'Authorization': `Token ${token}` }
       });
       if (response.ok) {
@@ -145,7 +154,10 @@ export const useAdminData = (token, currentView, selectedCategoria, selectedSubc
     if (!window.confirm('¿Estás seguro de eliminar este elemento?')) return;
     
     try {
-      const response = await fetch(`${API_BASE}/${type}/${id}/`, {
+      const url = new URL(`${API_BASE}/${type}/${id}/`);
+      if (restaurant_slug) url.searchParams.append('restaurante', restaurant_slug);
+      
+      const response = await fetch(url.toString(), {
         method: 'DELETE',
         headers: { 'Authorization': `Token ${token}` }
       });
@@ -172,18 +184,21 @@ export const useAdminData = (token, currentView, selectedCategoria, selectedSubc
 };
 
 // Hook para drag & drop
-export const useDragDrop = (token, items, setItems, updateOrderUrl) => {
+export const useDragDrop = (token, items, setItems, updateOrderUrl, restaurant_slug) => {
   const [draggedItem, setDraggedItem] = useState(null);
   const [dragOverItem, setDragOverItem] = useState(null);
 
   const updateOrder = async (reorderedItems) => {
     try {
+      const url = new URL(updateOrderUrl);
+      if (restaurant_slug) url.searchParams.append('restaurante', restaurant_slug);
+      
       const orders = reorderedItems.map((item, index) => ({
         id: item.id,
         orden: index + 1
       }));
       
-      const response = await fetch(updateOrderUrl, {
+      const response = await fetch(url.toString(), {
         method: 'POST',
         headers: {
           'Authorization': `Token ${token}`,
