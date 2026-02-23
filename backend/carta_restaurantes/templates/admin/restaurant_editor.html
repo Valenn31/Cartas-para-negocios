@@ -304,7 +304,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 6px;
             z-index: 1;
         }
@@ -312,6 +312,16 @@
         .categoria-card-overlay {
             position: relative;
             z-index: 2;
+            color: #000;
+        }
+        
+        .categoria-card-overlay .item-name {
+            color: #000 !important;
+            font-weight: 700;
+        }
+        
+        .categoria-card-overlay .item-details {
+            color: #000 !important;
         }
         
         /* Modal de edición */
@@ -499,11 +509,6 @@
                                     <div class="item-details">
                                         Orden: <strong>{{ categoria.orden }}</strong>
                                     </div>
-                                    {% if categoria.imagen %}
-                                        <div class="item-details">
-                                            <i class="fas fa-image"></i> Tiene imagen
-                                        </div>
-                                    {% endif %}
                                     <div class="item-details">
                                         <i class="fas fa-utensils"></i> 
                                         <strong id="count-cat-{{ categoria.id }}">
