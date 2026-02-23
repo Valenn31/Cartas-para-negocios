@@ -88,6 +88,37 @@ def manage_foods_view(request):
     
     return render(request, 'admin/comidas.html', context)
 
+# Vista de editor por restaurante específico
+@custom_login_required
+def restaurant_editor_view(request, slug):
+    """Editor completo para un restaurante específico"""
+    # Obtener el restaurante
+    try:
+        restaurante = Restaurante.objects.get(slug=slug)
+    except Restaurante.DoesNotExist:
+        return redirect('/admin/web/login/')
+    
+    # Verificar permiso: solo superuser o propietario del restaurante
+    user_restaurant = get_user_restaurant_view(request.user)
+    if not request.user.is_superuser and user_restaurant != restaurante:
+        return redirect('/admin/web/login/')
+    
+    # Obtener datos del restaurante
+    categorias = Categoria.objects.filter(restaurante=restaurante).order_by('orden')
+    subcategorias = Subcategoria.objects.filter(restaurante=restaurante).order_by('orden')
+    comidas = Comida.objects.filter(restaurante=restaurante).order_by('categoria__orden', 'orden')
+    
+    context = {
+        'restaurante': restaurante,
+        'categorias': categorias,
+        'subcategorias': subcategorias,
+        'comidas': comidas,
+        'user': request.user,
+        'is_superuser': request.user.is_superuser
+    }
+    
+    return render(request, 'admin/restaurant_editor.html', context)
+
 # API endpoints para CRUD operations con tenant isolation
 @csrf_exempt
 def api_categories(request):
@@ -919,17 +950,12 @@ def restaurant_dashboard_view(request):
             }
             
             function openEditor() {
-                // Redirigir al editor completo de Vercel con el slug específico del restaurante
+                // Redirigir al editor específico del restaurante
                 if (!restauranteSlug) {
-                    alert('Error: No se pudo obtener el slug del restaurante');
+                    alert('Error: No se pudo obtener el restaurante');
                     return;
                 }
-                
-                // Construir la URL del editor con el token como parámetro
-                const editorUrl = `https://cartas-para-negocios-8a7n-9ke9atue0-valenn31s-projects.vercel.app/admin/${restauranteSlug}/editar?token=${token}`;
-                
-                // Redirigir al editor con el token en la URL
-                window.location.href = editorUrl;
+                window.location.href = `/admin/web/restaurant/${restauranteSlug}/editor/`;
             }
             
             function manageCategories() {
@@ -972,6 +998,9 @@ urlpatterns = [
     
     # Dashboard web para restaurante individual
     path('admin/web/restaurant/', restaurant_dashboard_view, name='restaurant_dashboard'),
+    
+    # Editor completo para restaurante específico
+    path('admin/web/restaurant/<slug:slug>/editor/', restaurant_editor_view, name='restaurant_editor'),
     
     # Vistas de gestión con templates existentes
     path('admin/manage/categories/', manage_categories_view, name='manage_categories'),
