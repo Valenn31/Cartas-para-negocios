@@ -303,9 +303,10 @@ def simple_login_view(request):
                     if (response.ok) {
                         showAlert('¡Login exitoso! Redirigiendo...', 'success');
                         
-                        // Determinar el dashboard según el usuario
+                        // Determinar dashboard por rol real
                         let dashboardUrl;
-                        if (username === 'admin') {
+                        const isSuperuser = data.user && data.user.is_superuser;
+                        if (isSuperuser) {
                             dashboardUrl = '/admin/web/dashboard/?token=' + data.token;
                         } else {
                             dashboardUrl = '/admin/web/restaurant/?token=' + data.token;

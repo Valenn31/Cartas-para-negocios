@@ -23,7 +23,7 @@ async function handleLogin(e) {
     showLoading(true);
     
     try {
-        const response = await fetch('/admin/web/login/', {
+        const response = await fetch('/api/admin/auth/login/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -34,14 +34,19 @@ async function handleLogin(e) {
         
         const data = await response.json();
         
-        if (response.ok && data.success) {
+        if (response.ok && data.token) {
             // Save token
             localStorage.setItem('admin_token', data.token);
             
             // Show success and redirect
             showSuccess('¡Login exitoso! Redirigiendo...');
             setTimeout(() => {
-                window.location.href = data.redirect_url || '/admin/web/';
+                const isSuperuser = data.user && data.user.is_superuser;
+                if (isSuperuser) {
+                    window.location.href = '/admin/web/dashboard/?token=' + data.token;
+                } else {
+                    window.location.href = '/admin/web/restaurant/?token=' + data.token;
+                }
             }, 1000);
         } else {
             showError(data.error || 'Error en el login');
