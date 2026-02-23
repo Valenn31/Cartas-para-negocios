@@ -13,6 +13,13 @@ function Admin() {
   // Obtener el slug del restaurante de los parámetros de la URL
   const { restaurant_slug } = useParams();
   
+  // Validación: si no hay restaurant_slug, redireccionar
+  useEffect(() => {
+    if (!restaurant_slug) {
+      window.location.href = 'https://cartas-para-negocios-production.up.railway.app/admin/web/login/';
+    }
+  }, [restaurant_slug]);
+  
   // Estados de navegación
   const [currentView, setCurrentView] = useState('categorias');
   const [selectedCategoria, setSelectedCategoria] = useState(null);

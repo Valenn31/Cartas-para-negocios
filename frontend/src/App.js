@@ -135,9 +135,11 @@ function App() {
             <p className={styles.footerText}>
               Victory © 2025
             </p>
-            <a href={restauranteSlug ? `/admin/${restauranteSlug}/editar` : '/admin'} className={styles.adminLink}>
-              Editar Carta
-            </a>
+            {restauranteSlug && (
+              <a href={`/admin/${restauranteSlug}/editar`} className={styles.adminLink}>
+                Editar Carta
+              </a>
+            )}
           </div>
         </>
       ) : (
