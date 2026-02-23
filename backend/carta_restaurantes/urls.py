@@ -827,6 +827,7 @@ def restaurant_dashboard_view(request):
             // Obtener token de la URL o localStorage
             const urlParams = new URLSearchParams(window.location.search);
             let token = urlParams.get('token') || localStorage.getItem('admin_token');
+            let restauranteSlug = null;  // Variable global para guardar el slug del restaurante
             
             if (!token) {
                 window.location.href = '/admin/web/login/';
@@ -878,6 +879,9 @@ def restaurant_dashboard_view(request):
                     document.getElementById('restaurant-description').textContent = 'Panel de control de ' + data.restaurante;
                     document.getElementById('view-carta-link').href = `https://cartas-para-negocios.vercel.app/?restaurante=${data.slug}`;
                     
+                    // Guardar el slug del restaurante para usarlo en el editor
+                    restauranteSlug = data.slug;
+                    
                     // Mostrar estadísticas
                     if (data.estadisticas) {
                         document.getElementById('stats-section').innerHTML = `
@@ -915,16 +919,21 @@ def restaurant_dashboard_view(request):
             }
             
             function openEditor() {
-                // Redirigir al editor completo de Vercel con el token actual
-                const editorUrl = `https://cartas-para-negocios-8a7n-9ke9atue0-valenn31s-projects.vercel.app/ADMIN`;
+                // Redirigir al editor completo de Vercel con el slug específico del restaurante
+                if (!restauranteSlug) {
+                    alert('Error: No se pudo obtener el slug del restaurante');
+                    return;
+                }
+                
+                const editorUrl = `https://cartas-para-negocios-8a7n-9ke9atue0-valenn31s-projects.vercel.app/admin/${restauranteSlug}/editar`;
                 
                 // Asegurar que el token esté guardado correctamente para el editor
                 if (token) {
                     localStorage.setItem('admin_token', token);
                 }
                 
-                // Abrir el editor en una nueva pestaña
-                window.open(editorUrl, '_blank');
+                // Redirigir al editor (misma pestaña para mantener el token)
+                window.location.href = editorUrl;
             }
             
             function manageCategories() {
