@@ -36,6 +36,8 @@ def setup_test_users(request):
             username='superadmin',
             defaults={'email': 'superadmin@test.com', 'is_staff': True, 'is_superuser': True}
         )
+        superadmin_user.is_staff = True
+        superadmin_user.is_superuser = True
         superadmin_user.set_password('admin123')
         superadmin_user.save()
         
@@ -45,6 +47,7 @@ def setup_test_users(request):
             defaults={'email': 'admin@test.com', 'is_staff': True}
         )
         admin_user.set_password('123123')  # Nueva contraseña como pediste
+        admin_user.is_staff = True
         admin_user.is_superuser = False  # NO es superuser, solo propietario
         admin_user.save()
         
@@ -53,6 +56,7 @@ def setup_test_users(request):
             username='restaurante_mario',
             defaults={'email': 'mario@test.com', 'is_staff': True}
         )
+        mario_user.is_staff = True
         mario_user.set_password('test123')
         mario_user.save()
         
@@ -75,7 +79,7 @@ def setup_test_users(request):
             slug='pizzeria-mario',
             defaults={
                 'nombre': 'Pizzería Mario',
-                'descripción': 'Restaurante de prueba',
+                'descripcion': 'Restaurante de prueba',
                 'propietario': mario_user
             }
         )
