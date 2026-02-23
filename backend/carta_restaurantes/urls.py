@@ -989,16 +989,6 @@ def restaurant_dashboard_view(request):
                         <h3>Editor Completo</h3>
                         <p>Editor avanzado con drag & drop y todas las funciones</p>
                     </a>
-                    <a href="/admin/manage/categories/" class="action-card">
-                        <div class="icon"><i class="fas fa-list"></i></div>
-                        <h3>Gestionar Categorías</h3>
-                        <p>Organiza y edita las categorías de tu menú</p>
-                    </a>
-                    <a href="/admin/manage/foods/" class="action-card">
-                        <div class="icon"><i class="fas fa-utensils"></i></div>
-                        <h3>Gestionar Comidas</h3>
-                        <p>Añade, edita o elimina platos de tu carta</p>
-                    </a>
                     <div class="action-card" onclick="viewStats()">
                         <div class="icon"><i class="fas fa-chart-bar"></i></div>
                         <h3>Estadísticas</h3>
