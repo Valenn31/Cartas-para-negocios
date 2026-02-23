@@ -430,6 +430,80 @@ def test_dashboard(request):
             'help': 'Haz login primero para obtener un token válido'
         }, status=401)
 
+# Vista para debug - Ver qué usuario está logueado actualmente
+@api_view(['GET'])
+def debug_current_user(request):
+    """Debug helper para ver qué usuario está usando el dashboard"""
+    
+    # Obtener token desde parámetro GET
+    token_key = request.GET.get('token')
+    
+    if not token_key:
+        return Response({
+            'error': 'Se necesita token',
+            'help': 'Agrega ?token=TU_TOKEN a la URL'
+        }, status=400)
+    
+    try:
+        # Buscar el token
+        token = Token.objects.get(key=token_key)
+        user = token.user
+        
+        # Obtener restaurante del usuario
+        user_restaurant = get_user_restaurant(user)
+        
+        # Información completa del usuario
+        user_info = {
+            'username': user.username,
+            'email': user.email,
+            'is_superuser': user.is_superuser,
+            'is_staff': user.is_staff,
+            'is_active': user.is_active,
+            'date_joined': user.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
+        }
+        
+        # Información del restaurante
+        restaurant_info = None
+        if user_restaurant:
+            restaurant_info = {
+                'id': user_restaurant.id,
+                'nombre': user_restaurant.nombre,
+                'slug': user_restaurant.slug,
+                'descripcion': user_restaurant.descripcion,
+                'activo': user_restaurant.activo
+            }
+        
+        # Estadísticas que debería ver
+        stats_info = {}
+        if user_restaurant:
+            stats_info = {
+                'categorias': Categoria.objects.filter(restaurante=user_restaurant).count(),
+                'subcategorias': Subcategoria.objects.filter(restaurante=user_restaurant).count(),
+                'comidas': Comida.objects.filter(restaurante=user_restaurant).count(),
+                'tipo_vista': 'Propietario de Restaurante - Solo su restaurante'
+            }
+        elif user.is_superuser:
+            total_categorias = Categoria.objects.count()
+            total_subcategorias = Subcategoria.objects.count()
+            total_comidas = Comida.objects.count()
+            stats_info = {
+                'categorias': total_categorias,
+                'subcategorias': total_subcategorias, 
+                'comidas': total_comidas,
+                'tipo_vista': 'Super Admin - Todos los restaurantes (ESTADÍSTICAS GLOBALES)'
+            }
+        
+        return Response({
+            'usuario_actual': user_info,
+            'restaurante_asignado': restaurant_info,
+            'estadisticas_que_ve': stats_info,
+            'problema_detectado': 'Estás usando SUPERUSER (admin) en lugar de PROPIETARIO (restaurante_mario)' if user.is_superuser else 'Usuario correcto',
+            'solucion': 'Haz logout y login con: usuario=restaurante_mario, password=test123' if user.is_superuser else 'Todo correcto'
+        })
+        
+    except Token.DoesNotExist:
+        return Response({'error': 'Token inválido'}, status=401)
+
 # Vista para debug - ver todos los tokens
 @api_view(['GET'])
 def debug_tokens(request):
