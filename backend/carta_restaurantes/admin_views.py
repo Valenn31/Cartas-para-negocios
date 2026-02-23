@@ -222,72 +222,42 @@ def admin_login(request):
     
     username = None
     password = None
-    
-    print(f"DEBUG content_type: {request.content_type}")
-    
-    # Si el Content-Type está mal pero el contenido es form-data con JSON dentro
+
+    # Compatibilidad con requests mal serializados
     if request.content_type == 'application/x-www-form-urlencoded':
         try:
-            # Obtener el body crudo
             body_unicode = request.body.decode('utf-8')
-            print(f"DEBUG raw body: '{body_unicode}'")
-            
-            # Parsear como form-data URL-encoded
             parsed_data = parse_qs(body_unicode)
-            print(f"DEBUG parsed form data: {parsed_data}")
-            
-            # Buscar el campo _content que contiene el JSON
+
             if '_content' in parsed_data:
-                # Extraer y decodificar el JSON del campo _content
-                json_content = parsed_data['_content'][0]  # parse_qs devuelve listas
-                print(f"DEBUG json_content (URL-encoded): {json_content}")
-                
-                # Decodificar URL encoding y parsear JSON
+                json_content = parsed_data['_content'][0]
                 json_decoded = unquote(json_content)
-                print(f"DEBUG json_decoded: {json_decoded}")
-                
-                # Parsear el JSON
                 body_data = json.loads(json_decoded)
-                print(f"DEBUG body_data: {body_data}")
-                
                 username = body_data.get('username')
                 password = body_data.get('password')
-                print(f"DEBUG extracted from _content: username='{username}', password='{password}'")
             else:
-                print("DEBUG: No _content field found, trying regular POST data...")
                 username = request.POST.get('username')
                 password = request.POST.get('password')
-                print(f"DEBUG from POST: username='{username}', password='{password}'")
-                
-        except Exception as e:
-            print(f"DEBUG form-data parsing failed: {e}")
-            print(f"DEBUG Exception type: {type(e)}")
-            # Fallback a métodos normales
+        except Exception:
             username = request.POST.get('username')
             password = request.POST.get('password')
-            print(f"DEBUG fallback to POST: username='{username}', password='{password}'")
     else:
-        print("DEBUG: Content-Type is correct, using normal methods...")
-        # Content-Type correcto, usar métodos normales
         try:
             username = request.data.get('username')
             password = request.data.get('password')
-            print(f"DEBUG from request.data: username='{username}', password='{password}'")
             
             if not username or not password:
                 username = request.POST.get('username')
                 password = request.POST.get('password')
-                print(f"DEBUG fallback to POST: username='{username}', password='{password}'")
-        except Exception as e:
-            print(f"DEBUG normal parsing failed: {e}")
+        except Exception:
+            username = request.POST.get('username')
+            password = request.POST.get('password')
     
     if isinstance(username, str):
         username = username.strip()
     if isinstance(password, str):
         password = password.strip()
 
-    print(f"DEBUG final: username='{username}', password='{password}'")
-    
     if username and password:
         user = authenticate(username=username, password=password)
 
@@ -302,7 +272,6 @@ def admin_login(request):
                 user = authenticate(username=username, password=fallback_password)
                 if user:
                     break
-        print(f"DEBUG authenticate result: {user}")
         
         if user and user.is_staff:
             # Auto-reparación en desarrollo: admin siempre debe ser propietario,

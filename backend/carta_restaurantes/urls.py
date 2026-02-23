@@ -4,7 +4,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-from django.contrib.auth import authenticate, login as auth_login
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from .models import Categoria, Subcategoria, Comida, Restaurante
