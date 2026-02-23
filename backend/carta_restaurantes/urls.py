@@ -899,6 +899,32 @@ def restaurant_dashboard_view(request):
                 font-size: 0.9rem;
             }
             
+            .action-card.featured {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: 3px solid #fff;
+                box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+            }
+            
+            .action-card.featured:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+            }
+            
+            .action-card.featured .icon {
+                color: #fff;
+                font-size: 3rem;
+            }
+            
+            .action-card.featured h3,
+            .action-card.featured p {
+                color: white;
+            }
+            
+            .action-card.featured h3 {
+                font-weight: 700;
+            }
+            
             .logout-btn {
                 position: fixed;
                 top: 20px;
@@ -958,6 +984,11 @@ def restaurant_dashboard_view(request):
                 <div id="stats-section" class="stats-grid"></div>
                 
                 <div class="actions-grid">
+                    <a href="javascript:openEditor()" class="action-card featured">
+                        <div class="icon"><i class="fas fa-edit"></i></div>
+                        <h3>Editor Completo</h3>
+                        <p>Editor avanzado con drag & drop y todas las funciones</p>
+                    </a>
                     <a href="/admin/manage/categories/" class="action-card">
                         <div class="icon"><i class="fas fa-list"></i></div>
                         <h3>Gestionar Categorías</h3>
@@ -1071,6 +1102,19 @@ def restaurant_dashboard_view(request):
                         <p>Revisa la consola (F12) para más detalles.</p>
                     `;
                 }
+            }
+            
+            function openEditor() {
+                // Redirigir al editor completo de Vercel con el token actual
+                const editorUrl = `https://cartas-para-negocios-8a7n-9ke9atue0-valenn31s-projects.vercel.app/ADMIN`;
+                
+                // Asegurar que el token esté guardado correctamente para el editor
+                if (token) {
+                    localStorage.setItem('admin_token', token);
+                }
+                
+                // Abrir el editor en una nueva pestaña
+                window.open(editorUrl, '_blank');
             }
             
             function manageCategories() {

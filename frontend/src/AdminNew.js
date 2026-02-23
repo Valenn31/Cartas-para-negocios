@@ -7,7 +7,7 @@ const API_BASE = `${API_BASE_URL}/api/admin`;
 
 function Admin() {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('adminToken'));
+  const [token, setToken] = useState(localStorage.getItem('admin_token'));
   
   // Estados de navegación jerárquica
   const [currentView, setCurrentView] = useState('categorias'); // 'categorias', 'subcategorias', 'comidas'
@@ -52,12 +52,12 @@ function Admin() {
         const data = await response.json();
         setUser(data.user);
       } else {
-        localStorage.removeItem('adminToken');
+        localStorage.removeItem('admin_token');
         setToken(null);
       }
     } catch (error) {
       console.error('Error verificando token:', error);
-      localStorage.removeItem('adminToken');
+      localStorage.removeItem('admin_token');
       setToken(null);
     }
   };
@@ -76,7 +76,7 @@ function Admin() {
       const data = await response.json();
       
       if (response.ok) {
-        localStorage.setItem('adminToken', data.token);
+        localStorage.setItem('admin_token', data.token);
         setToken(data.token);
         setUser(data.user);
       } else {

@@ -7,7 +7,7 @@ const API_BASE = `${API_BASE_URL}/api/admin`;
 // Hook para autenticación
 export const useAuth = () => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('adminToken'));
+  const [token, setToken] = useState(localStorage.getItem('admin_token'));
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const [loginError, setLoginError] = useState('');
 
@@ -23,12 +23,12 @@ export const useAuth = () => {
         const data = await response.json();
         setUser(data.user);
       } else {
-        localStorage.removeItem('adminToken');
+        localStorage.removeItem('admin_token');
         setToken(null);
       }
     } catch (error) {
       console.error('Error verificando token:', error);
-      localStorage.removeItem('adminToken');
+      localStorage.removeItem('admin_token');
       setToken(null);
     }
   };
@@ -47,7 +47,7 @@ export const useAuth = () => {
       const data = await response.json();
       
       if (response.ok) {
-        localStorage.setItem('adminToken', data.token);
+        localStorage.setItem('admin_token', data.token);
         setToken(data.token);
         setUser(data.user);
       } else {
