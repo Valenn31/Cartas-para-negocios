@@ -925,14 +925,10 @@ def restaurant_dashboard_view(request):
                     return;
                 }
                 
-                const editorUrl = `https://cartas-para-negocios-8a7n-9ke9atue0-valenn31s-projects.vercel.app/admin/${restauranteSlug}/editar`;
+                // Construir la URL del editor con el token como parámetro
+                const editorUrl = `https://cartas-para-negocios-8a7n-9ke9atue0-valenn31s-projects.vercel.app/admin/${restauranteSlug}/editar?token=${token}`;
                 
-                // Asegurar que el token esté guardado correctamente para el editor
-                if (token) {
-                    localStorage.setItem('admin_token', token);
-                }
-                
-                // Redirigir al editor (misma pestaña para mantener el token)
+                // Redirigir al editor con el token en la URL
                 window.location.href = editorUrl;
             }
             

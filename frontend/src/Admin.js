@@ -13,10 +13,18 @@ function Admin() {
   // Obtener el slug del restaurante de los parámetros de la URL
   const { restaurant_slug } = useParams();
   
-  // Validación: si no hay restaurant_slug, redireccionar
+  // Validación y extracción del token: si no hay restaurant_slug, redireccionar
   useEffect(() => {
     if (!restaurant_slug) {
       window.location.href = 'https://cartas-para-negocios-production.up.railway.app/admin/web/login/';
+      return;
+    }
+    
+    // Extraer token de la URL si existe y guardarlo en localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
+    if (urlToken) {
+      localStorage.setItem('admin_token', urlToken);
     }
   }, [restaurant_slug]);
   
