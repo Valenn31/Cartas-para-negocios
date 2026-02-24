@@ -426,6 +426,161 @@ def admin_dashboard_view(request):
                 border-radius: 15px;
                 margin: 20px 0;
             }
+            
+            /* Modal de crear restaurante */
+            .modal-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 2000;
+                justify-content: center;
+                align-items: center;
+            }
+            
+            .modal-overlay.show {
+                display: flex;
+            }
+            
+            .modal-content {
+                background: white;
+                border-radius: 15px;
+                padding: 40px;
+                width: 90%;
+                max-width: 500px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            }
+            
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 30px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid #667eea;
+            }
+            
+            .modal-header h2 {
+                color: #667eea;
+                font-size: 1.5rem;
+                margin: 0;
+            }
+            
+            .modal-close {
+                background: none;
+                border: none;
+                font-size: 28px;
+                color: #999;
+                cursor: pointer;
+                padding: 0;
+                width: 30px;
+                height: 30px;
+            }
+            
+            .modal-close:hover {
+                color: #333;
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            .form-group label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: #333;
+                font-size: 0.95rem;
+            }
+            
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                font-size: 1rem;
+                font-family: inherit;
+            }
+            
+            .form-group textarea {
+                resize: vertical;
+                min-height: 80px;
+            }
+            
+            .form-group input:focus,
+            .form-group select:focus,
+            .form-group textarea:focus {
+                outline: none;
+                border-color: #667eea;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            }
+            
+            .modal-footer {
+                display: flex;
+                gap: 10px;
+                margin-top: 30px;
+            }
+            
+            .btn-modal {
+                flex: 1;
+                padding: 12px 20px;
+                border: none;
+                border-radius: 8px;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-create {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+            
+            .btn-create:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            }
+            
+            .btn-create:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+            
+            .btn-cancel {
+                background: #f0f0f0;
+                color: #333;
+            }
+            
+            .btn-cancel:hover {
+                background: #e0e0e0;
+            }
+            
+            .btn-new-restaurant {
+                background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                margin-bottom: 30px;
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .btn-new-restaurant:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(81, 207, 102, 0.4);
+            }
         </style>
     </head>
     <body>
@@ -448,8 +603,47 @@ def admin_dashboard_view(request):
             <div id="content" style="display: none;">
                 <div id="stats-section"></div>
                 <div class="restaurants-section">
+                    <button class="btn-new-restaurant" onclick="openModalCrearRestaurante()">
+                        <i class="fas fa-plus"></i> Nuevo Restaurante
+                    </button>
                     <h2 class="section-title"><i class="fas fa-store"></i> Restaurantes</h2>
                     <div id="restaurants-grid" class="restaurants-grid"></div>
+                </div>
+            </div>
+            
+            <!-- Modal para crear restaurante -->
+            <div id="modal-crear-restaurante" class="modal-overlay">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-store"></i> Crear Nuevo Restaurante</h2>
+                        <button class="modal-close" onclick="closeModalCrearRestaurante()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <form id="form-crear-restaurante" onsubmit="handleCrearRestaurante(event)">
+                        <div class="form-group">
+                            <label for="input-nombre-restaurante">Nombre del Restaurante *</label>
+                            <input type="text" id="input-nombre-restaurante" name="nombre" required placeholder="Ej: Restaurante Mario">
+                        </div>
+                        <div class="form-group">
+                            <label for="input-descripcion-restaurante">Descripción</label>
+                            <textarea id="input-descripcion-restaurante" name="descripcion" placeholder="Descripción del restaurante..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="input-propietario-restaurante">Propietario *</label>
+                            <select id="input-propietario-restaurante" name="propietario_id" required>
+                                <option value="">Selecciona un propietario</option>
+                            </select>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn-modal btn-cancel" onclick="closeModalCrearRestaurante()">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                            <button type="submit" class="btn-modal btn-create">
+                                <i class="fas fa-check"></i> Crear Restaurante
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -590,6 +784,123 @@ def admin_dashboard_view(request):
             function logout() {
                 localStorage.removeItem('admin_token');
                 window.location.href = '/admin/web/login/';
+            }
+            
+            // Funciones para crear restaurante
+            async function openModalCrearRestaurante() {
+                // Cargar propietarios disponibles
+                try {
+                    const response = await fetch('/admin/propietarios/');
+                    const data = await response.json();
+                    
+                    if (data.success && data.propietarios) {
+                        const select = document.getElementById('input-propietario-restaurante');
+                        select.innerHTML = '<option value="">Selecciona un propietario</option>';
+                        
+                        data.propietarios.forEach(prop => {
+                            const option = document.createElement('option');
+                            option.value = prop.id;
+                            option.textContent = `${prop.username} (${prop.email})`;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error cargando propietarios:', error);
+                }
+                
+                // Mostrar modal
+                document.getElementById('modal-crear-restaurante').classList.add('show');
+                // Limpiar formulario
+                document.getElementById('form-crear-restaurante').reset();
+            }
+            
+            function closeModalCrearRestaurante() {
+                document.getElementById('modal-crear-restaurante').classList.remove('show');
+            }
+            
+            async function handleCrearRestaurante(event) {
+                event.preventDefault();
+                
+                const nombre = document.getElementById('input-nombre-restaurante').value;
+                const descripcion = document.getElementById('input-descripcion-restaurante').value;
+                const propietario_id = document.getElementById('input-propietario-restaurante').value;
+                const btnSubmit = document.querySelector('#form-crear-restaurante button[type="submit"]');
+                const originalText = btnSubmit.innerHTML;
+                
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
+                
+                try {
+                    const response = await fetch('/admin/restaurante/create/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({
+                            nombre: nombre,
+                            descripcion: descripcion,
+                            propietario_id: parseInt(propietario_id)
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        btnSubmit.innerHTML = '<i class="fas fa-check"></i> ¡Creado!';
+                        btnSubmit.style.backgroundColor = '#51cf66';
+                        
+                        setTimeout(() => {
+                            closeModalCrearRestaurante();
+                            loadDashboard();
+                            btnSubmit.disabled = false;
+                            btnSubmit.innerHTML = originalText;
+                            btnSubmit.style.backgroundColor = '';
+                        }, 1500);
+                    } else {
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerHTML = '<i class="fas fa-times"></i> Error';
+                        btnSubmit.style.backgroundColor = '#ff6b6b';
+                        
+                        setTimeout(() => {
+                            btnSubmit.innerHTML = originalText;
+                            btnSubmit.style.backgroundColor = '';
+                        }, 2000);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<i class="fas fa-times"></i> Error';
+                    btnSubmit.style.backgroundColor = '#ff6b6b';
+                    
+                    setTimeout(() => {
+                        btnSubmit.innerHTML = originalText;
+                        btnSubmit.style.backgroundColor = '';
+                    }, 2000);
+                }
+            }
+            
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            // Cerrar modal al clickear fuera
+            window.onclick = function(event) {
+                const modal = document.getElementById('modal-crear-restaurante');
+                if (event.target === modal) {
+                    closeModalCrearRestaurante();
+                }
             }
         </script>
     </body>
@@ -1072,6 +1383,70 @@ def delete_comida(request, comida_id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
+@custom_login_required
+def get_propietarios(request):
+    """API para obtener lista de propietarios disponibles - Solo superadmin"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Solo superadmin'}, status=403)
+    
+    # Obtener usuarios que no sean superuser
+    propietarios = User.objects.filter(is_superuser=False).values('id', 'username', 'email')
+    
+    return JsonResponse({
+        'success': True,
+        'propietarios': list(propietarios)
+    })
+
+@custom_login_required
+@csrf_exempt
+def create_restaurante(request):
+    """API para crear un nuevo restaurante - Solo superadmin"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Solo superadmin puede crear restaurantes'}, status=403)
+    
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            # Validar campos requeridos
+            nombre = data.get('nombre', '').strip()
+            descripcion = data.get('descripcion', '').strip()
+            propietario_id = data.get('propietario_id')
+            
+            if not nombre:
+                return JsonResponse({'success': False, 'error': 'El nombre es requerido'}, status=400)
+            
+            if not propietario_id:
+                return JsonResponse({'success': False, 'error': 'El propietario es requerido'}, status=400)
+            
+            # Verificar que el propietario existe
+            try:
+                propietario = User.objects.get(id=propietario_id)
+            except User.DoesNotExist:
+                return JsonResponse({'success': False, 'error': 'Propietario no encontrado'}, status=404)
+            
+            # Crear el restaurante
+            restaurante = Restaurante.objects.create(
+                nombre=nombre,
+                descripcion=descripcion,
+                propietario=propietario,
+                activo=True
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Restaurante creado exitosamente',
+                'restaurante': {
+                    'id': restaurante.id,
+                    'nombre': restaurante.nombre,
+                    'slug': restaurante.slug
+                }
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    
+    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
 
 urlpatterns = [
     path('', redirect_to_login),
@@ -1100,6 +1475,10 @@ urlpatterns = [
     path('admin/categoria/delete/<int:categoria_id>/', delete_categoria, name='delete_categoria'),
     path('admin/comida/update/<int:comida_id>/', update_comida, name='update_comida'),
     path('admin/comida/delete/<int:comida_id>/', delete_comida, name='delete_comida'),
+    
+    # API endpoints para crear restaurantes
+    path('admin/restaurante/create/', create_restaurante, name='create_restaurante'),
+    path('admin/propietarios/', get_propietarios, name='get_propietarios'),
     
     # API endpoints para gestión
     path('api/categories/', api_categories, name='api_categories'),
