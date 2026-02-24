@@ -630,8 +630,20 @@ def admin_dashboard_view(request):
                             <textarea id="input-descripcion-restaurante" name="descripcion" placeholder="Descripción del restaurante..."></textarea>
                         </div>
                         <div class="form-group">
-                            <label>Propietario <span style="color: #999; font-size: 0.9rem;">(Próximamente)</span></label>
-                            <input type="text" disabled style="background: #f0f0f0; color: #999;" placeholder="Esta función estará disponible pronto...">
+                            <label for="input-username-cliente">Usuario (Username) *</label>
+                            <input type="text" id="input-username-cliente" name="username" required placeholder="Ej: cliente123">
+                        </div>
+                        <div class="form-group">
+                            <label for="input-email-cliente">Email *</label>
+                            <input type="email" id="input-email-cliente" name="email" required placeholder="Ej: cliente@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="input-password-cliente">Contraseña *</label>
+                            <input type="password" id="input-password-cliente" name="password" required placeholder="Mínimo 8 caracteres">
+                        </div>
+                        <div class="form-group">
+                            <label for="input-password-confirm">Confirmar Contraseña *</label>
+                            <input type="password" id="input-password-confirm" name="password_confirm" required placeholder="Repite la contraseña">
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn-modal btn-cancel" onclick="closeModalCrearRestaurante()">
@@ -801,8 +813,23 @@ def admin_dashboard_view(request):
                 
                 const nombre = document.getElementById('input-nombre-restaurante').value;
                 const descripcion = document.getElementById('input-descripcion-restaurante').value;
+                const username = document.getElementById('input-username-cliente').value;
+                const email = document.getElementById('input-email-cliente').value;
+                const password = document.getElementById('input-password-cliente').value;
+                const passwordConfirm = document.getElementById('input-password-confirm').value;
                 const btnSubmit = document.querySelector('#form-crear-restaurante button[type="submit"]');
                 const originalText = btnSubmit.innerHTML;
+                
+                // Validar contraseñas
+                if (password !== passwordConfirm) {
+                    alert('Las contraseñas no coinciden');
+                    return;
+                }
+                
+                if (password.length < 8) {
+                    alert('La contraseña debe tener al menos 8 caracteres');
+                    return;
+                }
                 
                 btnSubmit.disabled = true;
                 btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
@@ -817,7 +844,9 @@ def admin_dashboard_view(request):
                         body: JSON.stringify({
                             nombre: nombre,
                             descripcion: descripcion,
-                            propietario_id: null
+                            username: username,
+                            email: email,
+                            password: password
                         })
                     });
                     
@@ -838,6 +867,7 @@ def admin_dashboard_view(request):
                         btnSubmit.disabled = false;
                         btnSubmit.innerHTML = '<i class="fas fa-times"></i> Error';
                         btnSubmit.style.backgroundColor = '#ff6b6b';
+                        alert('Error: ' + (data.error || 'No se pudo crear'));
                         
                         setTimeout(() => {
                             btnSubmit.innerHTML = originalText;
@@ -1377,7 +1407,7 @@ def get_propietarios(request):
 @custom_login_required
 @csrf_exempt
 def create_restaurante(request):
-    """API para crear un nuevo restaurante - Solo superadmin"""
+    """API para crear un nuevo restaurante con usuario - Solo superadmin"""
     if not request.user.is_superuser:
         return JsonResponse({'success': False, 'error': 'Solo superadmin puede crear restaurantes'}, status=403)
     
@@ -1388,34 +1418,59 @@ def create_restaurante(request):
             # Validar campos requeridos
             nombre = data.get('nombre', '').strip()
             descripcion = data.get('descripcion', '').strip()
-            propietario_id = data.get('propietario_id')
+            username = data.get('username', '').strip()
+            email = data.get('email', '').strip()
+            password = data.get('password', '').strip()
             
             if not nombre:
-                return JsonResponse({'success': False, 'error': 'El nombre es requerido'}, status=400)
+                return JsonResponse({'success': False, 'error': 'El nombre del restaurante es requerido'}, status=400)
             
-            # Obtener propietario si está especificado
-            propietario = None
-            if propietario_id:
-                try:
-                    propietario = User.objects.get(id=propietario_id)
-                except User.DoesNotExist:
-                    return JsonResponse({'success': False, 'error': 'Propietario no encontrado'}, status=404)
+            if not username:
+                return JsonResponse({'success': False, 'error': 'El nombre de usuario es requerido'}, status=400)
             
-            # Crear el restaurante sin propietario por ahora
+            if not email:
+                return JsonResponse({'success': False, 'error': 'El email es requerido'}, status=400)
+            
+            if not password:
+                return JsonResponse({'success': False, 'error': 'La contraseña es requerida'}, status=400)
+            
+            # Validar que el username no exista
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({'success': False, 'error': 'El nombre de usuario ya existe'}, status=400)
+            
+            # Validar que el email no exista
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({'success': False, 'error': 'El email ya está registrado'}, status=400)
+            
+            # Crear el usuario
+            try:
+                propietario = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password
+                )
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': f'Error al crear usuario: {str(e)}'}, status=400)
+            
+            # Crear el restaurante con el propietario
             restaurante = Restaurante.objects.create(
                 nombre=nombre,
                 descripcion=descripcion,
-                propietario=propietario if propietario else request.user,  # Si no hay propietario, asignar al superadmin temporalmente
+                propietario=propietario,
                 activo=True
             )
             
             return JsonResponse({
                 'success': True,
-                'message': 'Restaurante creado exitosamente',
+                'message': 'Restaurante y usuario creados exitosamente',
                 'restaurante': {
                     'id': restaurante.id,
                     'nombre': restaurante.nombre,
                     'slug': restaurante.slug
+                },
+                'usuario': {
+                    'username': propietario.username,
+                    'email': propietario.email
                 }
             })
         except Exception as e:
