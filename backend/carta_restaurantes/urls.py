@@ -630,10 +630,8 @@ def admin_dashboard_view(request):
                             <textarea id="input-descripcion-restaurante" name="descripcion" placeholder="Descripción del restaurante..."></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="input-propietario-restaurante">Propietario *</label>
-                            <select id="input-propietario-restaurante" name="propietario_id" required>
-                                <option value="">Selecciona un propietario</option>
-                            </select>
+                            <label>Propietario <span style="color: #999; font-size: 0.9rem;">(Próximamente)</span></label>
+                            <input type="text" disabled style="background: #f0f0f0; color: #999;" placeholder="Esta función estará disponible pronto...">
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn-modal btn-cancel" onclick="closeModalCrearRestaurante()">
@@ -788,26 +786,6 @@ def admin_dashboard_view(request):
             
             // Funciones para crear restaurante
             async function openModalCrearRestaurante() {
-                // Cargar propietarios disponibles
-                try {
-                    const response = await fetch('/admin/propietarios/');
-                    const data = await response.json();
-                    
-                    if (data.success && data.propietarios) {
-                        const select = document.getElementById('input-propietario-restaurante');
-                        select.innerHTML = '<option value="">Selecciona un propietario</option>';
-                        
-                        data.propietarios.forEach(prop => {
-                            const option = document.createElement('option');
-                            option.value = prop.id;
-                            option.textContent = `${prop.username} (${prop.email})`;
-                            select.appendChild(option);
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error cargando propietarios:', error);
-                }
-                
                 // Mostrar modal
                 document.getElementById('modal-crear-restaurante').classList.add('show');
                 // Limpiar formulario
@@ -823,7 +801,6 @@ def admin_dashboard_view(request):
                 
                 const nombre = document.getElementById('input-nombre-restaurante').value;
                 const descripcion = document.getElementById('input-descripcion-restaurante').value;
-                const propietario_id = document.getElementById('input-propietario-restaurante').value;
                 const btnSubmit = document.querySelector('#form-crear-restaurante button[type="submit"]');
                 const originalText = btnSubmit.innerHTML;
                 
@@ -840,7 +817,7 @@ def admin_dashboard_view(request):
                         body: JSON.stringify({
                             nombre: nombre,
                             descripcion: descripcion,
-                            propietario_id: parseInt(propietario_id)
+                            propietario_id: null
                         })
                     });
                     
@@ -1416,20 +1393,19 @@ def create_restaurante(request):
             if not nombre:
                 return JsonResponse({'success': False, 'error': 'El nombre es requerido'}, status=400)
             
-            if not propietario_id:
-                return JsonResponse({'success': False, 'error': 'El propietario es requerido'}, status=400)
+            # Obtener propietario si está especificado
+            propietario = None
+            if propietario_id:
+                try:
+                    propietario = User.objects.get(id=propietario_id)
+                except User.DoesNotExist:
+                    return JsonResponse({'success': False, 'error': 'Propietario no encontrado'}, status=404)
             
-            # Verificar que el propietario existe
-            try:
-                propietario = User.objects.get(id=propietario_id)
-            except User.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'Propietario no encontrado'}, status=404)
-            
-            # Crear el restaurante
+            # Crear el restaurante sin propietario por ahora
             restaurante = Restaurante.objects.create(
                 nombre=nombre,
                 descripcion=descripcion,
-                propietario=propietario,
+                propietario=propietario if propietario else request.user,  # Si no hay propietario, asignar al superadmin temporalmente
                 activo=True
             )
             
